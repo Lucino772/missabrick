@@ -3,7 +3,19 @@ import axios from "axios";
 const Dropzone = () => {
 
     const onInput = (e) => {
-        console.log(e.target.files)
+        if (e.target.files.length == 0)
+            return;
+        
+        const file = e.target.files[0];
+        const formData = new FormData();
+
+        formData.append(
+            "file",
+            file,
+            file.name
+        )
+
+        axios.post('/upload', formData);
     }
 
     return (
