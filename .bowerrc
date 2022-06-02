@@ -1,9 +1,0 @@
-{
-    "directory": "app/static/js/bower",
-    "storage": {
-        "packages": ".bower/packages",
-        "registry": ".bower/registry",
-        "links": ".bower/links"
-    },
-    "tmp": ".bower/tmp"
-}

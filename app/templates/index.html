@@ -1,12 +1,15 @@
 {% extends "_base.html" %}
 
 {% block content %}
-    <div class="flex flex-col justify-center items-center">
-        <h1 class="text-5xl">Welcome to <span class="font-bold text-orange-700">Miss A Brick</span> !</h1>
-        <form class="mt-12" action="/find" method="post">
-            <input class="border border-slate-300 rounded px-2 py-2 w-96" type="text" name="set_number">
-            <button class="text-white font-bold uppercase rounded bg-orange-700 px-4 py-2" type="submit">Download</button>
-        </form>
-        <x-greeting name="Luca"></x-greeting>
+    <div class="flex flex-row h-full">
+        <div class="w-96 flex flex-col divide-y p-2">
+            <x-set-card></x-set-card>
+            <x-set-card></x-set-card>
+            <x-set-card></x-set-card>
+            <x-set-card></x-set-card>
+        </div>
+        <div class="flex-1">
+            <x-dropzone></x-dropzone> 
+        </div>
     </div>
 {% endblock %}
