@@ -2,6 +2,9 @@
 # Created by https://www.toptal.com/developers/gitignore/api/python,bower,node
 # Edit at https://www.toptal.com/developers/gitignore?templates=python,bower,node
 
+### Datasets ###
+datasets
+
 ### Bower ###
 .bower
 app/static/js/bower
