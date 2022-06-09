@@ -24,6 +24,7 @@
   "packageManager": "yarn@3.2.1",
   "dependencies": {
     "axios": "^0.27.2",
+    "file-saver": "^2.0.5",
     "preact": "^10.7.3",
     "preact-custom-element": "^4.2.1"
   },
