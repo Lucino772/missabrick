@@ -15,9 +15,19 @@ const UploadButton = ({ multiple = false }) => {
     const onChange = (e) => {
         let formData = new FormData();
 
+        let fileTooBig = false;
         for (let i = 0; i < e.target.files.length; i++) {
             const _file = e.target.files[i];
-            formData.append('file', _file, _file.name)
+            if (_file.size > 1 * 1000 * 1000)
+                fileTooBig = true;
+            else
+                formData.append('file', _file, _file.name)
+        }
+
+        if (fileTooBig)
+        {
+            alert("File to big, max. 1 MB")
+            return
         }
 
         setLoading(true);

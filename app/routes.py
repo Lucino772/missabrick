@@ -1,20 +1,9 @@
-from flask import Blueprint, redirect, render_template, request, url_for, send_file, jsonify, abort, after_this_request, current_app
+from flask import Blueprint, render_template, request, abort, current_app
 import os
-import uuid
-from .datasets import Set
-import pandas as pd
-
-import tempfile
-
+from .datasets import get_set_data, set_exists
+from .utils import create_temp_set_excel_file, stream_file_and_remove, read_uploaded_set_excel_file
 
 app_routes = Blueprint('app_routes', __name__)
-
-
-def _create_excel(filename: str, parts: pd.DataFrame, fig_parts: pd.DataFrame, elements: pd.DataFrame):
-    with pd.ExcelWriter(filename) as writer:
-        parts.to_excel(writer, engine="openpyxl", sheet_name='parts', index=False)
-        fig_parts.to_excel(writer, engine="openpyxl", sheet_name='minifigs', index=False)
-        elements.to_excel(writer, engine="openpyxl", sheet_name='elements', index=False)
 
 @app_routes.route('/', methods=['GET'])
 def index():
@@ -24,17 +13,9 @@ def index():
 def upload():
     file = request.files.get('file', None)
     if file is None:
-        return 'ERROR'
+        abort(403)
     
-    dataframes = {}
-    with tempfile.NamedTemporaryFile() as fp:
-        fp.write(file.stream.read())
-
-        dataframes = pd.read_excel(fp, sheet_name=["parts", "minifigs", "elements"])
-
-    parts_df = dataframes.get('parts', None)
-    minifigs_parts_df = dataframes.get('minifigs', None)
-    elements_df = dataframes.get('elements', None)
+    parts_df, minifigs_parts_df, elements_df = read_uploaded_set_excel_file(file)
 
     print(parts_df)
     print(minifigs_parts_df)
@@ -44,31 +25,19 @@ def upload():
 
 @app_routes.route('/set/<set_number>/file', methods=['GET'])
 def get_file(set_number: str):
-    _set = Set(set_number)
-
-    filename = os.path.join(os.getcwd(), 'files', f'{_set.set_num}.xlsx')
-
-    if len(_set.sets) > 0:
-        _create_excel(filename, _set.sets.parts, _set.sets.minifigs.parts, _set.sets.elements)
-    else:
-        _create_excel(filename, _set.parts, _set.minifigs.parts, _set.elements)
-
-    return jsonify(url=url_for('app_routes.download_file', filename=f'{_set.set_num}.xlsx'))
-
-@app_routes.route('/file/download/<filename>')
-def download_file(filename: str):
-    filepath = os.path.join(os.getcwd(), 'files', filename)
-
-    if not os.path.exists(filepath):
+    if not set_exists(set_number):
         abort(404)
 
-    def stream_file_and_remove():
-        with open(filepath, 'rb') as fp:
-            yield from fp
-        
-        os.remove(filepath)
+    parts, minifigs_parts, elements = get_set_data(set_number)
+    fd, filename = create_temp_set_excel_file(parts, minifigs_parts, elements)
+    nbytes = os.stat(filename).st_size
 
     return current_app.response_class(
-        stream_file_and_remove(),
-        headers={'Content-Disposition': 'attachment', 'filename': filename}
+        stream_file_and_remove(filename, fd),
+        headers={
+            'Content-Disposition': 'attachment', 
+            'Content-Length': nbytes,
+            'Content-Type': 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+            'filename': f'{set_number}.xlsx'
+        }
     )
