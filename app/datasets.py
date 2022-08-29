@@ -1,11 +1,16 @@
 import typing
+import json
 import pandas as pd
 
-def _concat_dataframes(frames: typing.Iterable[pd.DataFrame]):
+PARTS_COLS = ['part_num','color_id','quantity','is_spare','color_name','color_rgb','color_is_trans','part_name','part_cat_id','part_material']
+MINIFIGS_PARTS_COLS = ['part_num','color_id','quantity','is_spare','color_name','color_rgb','color_is_trans','part_name','part_cat_id','part_material','fig_num']
+ELEMENTS_COLS = ['part_num','color_id','element_id']
+
+def _concat_dataframes(frames: typing.Iterable[pd.DataFrame], columns: list):
     if len(frames) > 0:
         return pd.concat(frames)
 
-    return pd.DataFrame()
+    return pd.DataFrame(columns=columns)
 
 def _get_inventories(set_number: str):
     inventories = pd.read_csv('./datasets/inventories.csv')
@@ -88,7 +93,7 @@ def get_set_data(set_number: str, quantity: int = 1):
             _minifigs_parts_list.append(minifigs_parts)
             _elements_list.append(elements)
 
-        return _concat_dataframes(_parts_list), _concat_dataframes(_minifigs_parts_list), _concat_dataframes(_elements_list)
+        return _concat_dataframes(_parts_list, PARTS_COLS), _concat_dataframes(_minifigs_parts_list, MINIFIGS_PARTS_COLS), _concat_dataframes(_elements_list, ELEMENTS_COLS)
 
     # Get parts for minifigs and concatenate all elements
     _minifigs_parts_list = []
@@ -100,8 +105,8 @@ def get_set_data(set_number: str, quantity: int = 1):
         _minifigs_parts_list.append(_minifig_parts)
         _minifigs_elements_list.append(_minifig_elements)
     
-    _minifigs_parts = _concat_dataframes(_minifigs_parts_list)
-    _elements = _concat_dataframes([_parts_elements] + _minifigs_elements_list)
+    _minifigs_parts = _concat_dataframes(_minifigs_parts_list, MINIFIGS_PARTS_COLS)
+    _elements = _concat_dataframes([_parts_elements] + _minifigs_elements_list, ELEMENTS_COLS)
 
     return _parts, _minifigs_parts, _elements
 
@@ -128,30 +133,24 @@ def gen_report(parts: pd.DataFrame, fig_parts: pd.DataFrame, elements: pd.DataFr
     parts['missing'] = parts['quantity'] - parts[parts_count_key]
     fig_parts['missing'] = fig_parts['quantity'] - fig_parts[fig_parts_count_key]
 
-    # Transform data to JSON
-    def _row_to_json(row: pd.Series):
-        ret = {
-            'part_num': row['part_num'],
-            'part_name': row['part_name'],
-            'color': {
-                'name': row['color_name'],
-                'rgb': row['color_rgb'],
-                'transparent': row['color_is_trans'] == 't'
-            },
-            'quantity': row['quantity'],
-            'missing': row['missing'],
-        }
 
-        # Case for fig parts
-        if 'fig_num' in row.keys():
-            ret['fig_num'] = row['fig_num']
-
-        return ret
-
-    parts_data = parts.apply(_row_to_json, axis=1).tolist()
-    fig_parts_data = fig_parts.apply(_row_to_json, axis=1).tolist()
+    parts_data = json.loads(parts.to_json(orient='table')).get('data', [])
+    fig_parts_data = json.loads(fig_parts.to_json(orient='table')).get('data', [])
 
     return {
         'parts': parts_data,
         'fig_parts': fig_parts_data
     }
+
+def search_sets(search):
+    all_sets = pd.read_csv('./datasets/sets.csv')
+
+    filtered_sets = all_sets
+    if search is not None or search != '':
+        filtered_sets = all_sets[all_sets['set_num'].str.startswith(search)]
+
+    all_themes = pd.read_csv('./datasets/themes.csv')
+    sets_with_theme = filtered_sets.join(all_themes.set_index('id').filter(items=['name']), on='theme_id', rsuffix='_theme')
+    json_data = json.loads(sets_with_theme.to_json(orient='table'))['data']
+
+    return json_data
