@@ -2,6 +2,7 @@
   "name": "missabrick",
   "packageManager": "yarn@3.2.3",
   "scripts": {
+    "watch": "yarn tailwindcss -o app/static/dist/css/index.css -w",
     "build": "yarn tailwindcss -o app/static/dist/css/index.css -m"
   },
   "devDependencies": {
