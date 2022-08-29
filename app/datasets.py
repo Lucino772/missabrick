@@ -104,3 +104,54 @@ def get_set_data(set_number: str, quantity: int = 1):
     _elements = _concat_dataframes([_parts_elements] + _minifigs_elements_list)
 
     return _parts, _minifigs_parts, _elements
+
+
+def _find_first_key(possible_values: typing.Iterable[str], search_list: typing.Iterable[str]):
+    for key in possible_values:
+        if key in search_list:
+            return key
+
+def gen_report(parts: pd.DataFrame, fig_parts: pd.DataFrame, elements: pd.DataFrame):
+    count_keys = ['count', 'current']
+    parts_count_key = _find_first_key(count_keys, parts.columns)
+    fig_parts_count_key = _find_first_key(count_keys, fig_parts.columns)
+
+    if parts_count_key is None:
+        parts['count'] = 0
+        parts_count_key = 'count'
+
+    if fig_parts_count_key is None:
+        fig_parts['count'] = 0
+        fig_parts_count_key = 'count'
+
+    # Calculate missing pieces
+    parts['missing'] = parts['quantity'] - parts[parts_count_key]
+    fig_parts['missing'] = fig_parts['quantity'] - fig_parts[fig_parts_count_key]
+
+    # Transform data to JSON
+    def _row_to_json(row: pd.Series):
+        ret = {
+            'part_num': row['part_num'],
+            'part_name': row['part_name'],
+            'color': {
+                'name': row['color_name'],
+                'rgb': row['color_rgb'],
+                'transparent': row['color_is_trans'] == 't'
+            },
+            'quantity': row['quantity'],
+            'missing': row['missing'],
+        }
+
+        # Case for fig parts
+        if 'fig_num' in row.keys():
+            ret['fig_num'] = row['fig_num']
+
+        return ret
+
+    parts_data = parts.apply(_row_to_json, axis=1).tolist()
+    fig_parts_data = fig_parts.apply(_row_to_json, axis=1).tolist()
+
+    return {
+        'parts': parts_data,
+        'fig_parts': fig_parts_data
+    }

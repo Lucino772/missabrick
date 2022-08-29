@@ -1,6 +1,6 @@
-from flask import Blueprint, render_template, request, abort, current_app
+from flask import Blueprint, jsonify, render_template, request, abort, current_app
 import os
-from .datasets import get_set_data, set_exists
+from .datasets import gen_report, get_set_data, set_exists
 from .utils import create_temp_set_excel_file, stream_file_and_remove, read_uploaded_set_excel_file
 
 app_routes = Blueprint('app_routes', __name__)
@@ -17,11 +17,13 @@ def upload():
     
     parts_df, minifigs_parts_df, elements_df = read_uploaded_set_excel_file(file)
 
-    print(parts_df)
-    print(minifigs_parts_df)
-    print(elements_df)
+    # Missing data
+    if any(map(lambda v: v is None, [parts_df, minifigs_parts_df, elements_df])):
+        abort(403)
 
-    return "HELLO WORLD !"
+    # Generate report
+    report = gen_report(parts_df, minifigs_parts_df, elements_df)
+    return jsonify(report)
 
 @app_routes.route('/set/<set_number>/file', methods=['GET'])
 def get_file(set_number: str):
