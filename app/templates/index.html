@@ -1,102 +1,77 @@
-<!DOCTYPE html>
-<html lang="en">
+{% extends 'layout/base.html' %}
 
-<head>
-    <meta charset="UTF-8">
-    <meta http-equiv="X-UA-Compatible" content="IE=edge">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>MissABrick</title>
-
-    <script type="module">
-        import hotwiredTurbo from 'https://cdn.skypack.dev/@hotwired/turbo';
-    </script>
-
-    <link rel="stylesheet" href="{{ url_for('static', filename='dist/css/index.css') }}">
-</head>
-
-<body style="background-color: #F3F3F3;">
-    <div class="container mx-auto h-screen">
-        <div class="flex w-full justify-between items-center py-2">
-            <p class="text-orange-700 font-bold text-xl">Miss A Brick</p>
-            <nav class="flex gap-8 text-gray-500 font-normal leading-7">
-                <a href="">Home</a>
-                <a href="">Report</a>
-            </nav>
-        </div>
-
-        <div class="flex flex-col gap-5 py-10">
-            <turbo-frame id="search-form">
-                <div id="filter" class="flex">
-                    <div class="flex flex-col flex-1">
-                        <form class="flex" action="/" method="get" data-turbo-frame="search-result">
-                            <input name="search" type="text" placeholder="Search"
-                                class="transition flex-1 font-semibold text-gray-700 rounded-l border-r-0 border-gray-200 focus:ring-0 focus:border-orange-700" />
-                            <button
-                                class="transition-colors bg-orange-700 hover:bg-orange-700/80 w-11 rounded-r flex justify-center items-center">
-                                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
-                                    stroke-width="1.5" stroke="currentColor" class="w-6 h-6 stroke-white">
-                                    <path stroke-linecap="round" stroke-linejoin="round"
-                                        d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607z" />
-                                </svg>
-                            </button>
-                        </form>
-                    </div>
-                </div>
-            </turbo-frame>
-            <turbo-frame class="flex flex-col gap-5" id="search-result">
-                <div id="items" class="grid grid-cols-4 gap-8">
-                    {% for _set in sets %}
-                    <div id="set-{{ _set['index'] }}"
-                        class="flex flex-col gap-4 bg-white border-gray-400 border p-2 rounded-sm">
-                        <div class="flex flex-col gap">
-                            <p class="text-gray-700 text-lg font-bold truncate">{{ _set['set_num'] }}: {{ _set['name']}}
-                            </p>
-                            <p class="text-sm text-gray-500 truncate">
-                                <span class="flex-auto">{{ _set['name_theme'] }}</span> -
-                                <span class="flex-auto">{{ _set['year'] }}</span> -
-                                <span class="flex-auto">{{ _set['num_parts'] }} Parts</span>
-                            </p>
-                        </div>
-                        <div class="flex flex-row justify-between items-center">
-                            <p class="flex flex-row items-center text-base text-gray-500">
-                                <span class="mr-2">
-                                    <svg height="21" width="21">
-                                        <circle cx="10.5" cy="10.5" r="10" stroke="gray" stroke-width="1"
-                                            fill="white" />
-                                    </svg>
-                                </span>
-                                <span>White</span>
-                            </p>
-                            <a href="{{ url_for('app_routes.download_set', set_number=_set['set_num']) }}" target="_blank" data-turbo="false">
-                                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
-                                    stroke-width="1.5" stroke="currentColor" class="w-6 h-6">
-                                    <path stroke-linecap="round" stroke-linejoin="round"
-                                        d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5M16.5 12L12 16.5m0 0L7.5 12m4.5 4.5V3" />
-                                </svg>
-                            </a>
-                        </div>
-                    </div>
-                    {% endfor %}
-                </div>
-                <div class="flex flex-row gap-1 items-center justify-center">
-                    <{{ 'span' if prev_page is none else 'a' }} href="/?search={{ current_search }}&page={{ prev_page }}" rel="prev">
+{% block content %}
+<div class="flex flex-col gap-5 py-10">
+    <turbo-frame id="search-form">
+        <div id="filter" class="flex">
+            <div class="flex flex-col flex-1">
+                <form class="flex" action="/" method="get" data-turbo-frame="search-result">
+                    <input name="search" type="text" placeholder="Search"
+                        class="transition flex-1 font-semibold text-gray-700 rounded-l border-r-0 border-gray-200 focus:ring-0 focus:border-orange-700" />
+                    <button
+                        class="transition-colors bg-orange-700 hover:bg-orange-700/80 w-11 rounded-r flex justify-center items-center">
                         <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5"
-                            stroke="currentColor" class="w-5 h-5 {{ 'opacity-50' if prev_page is none else '' }}">
-                            <path stroke-linecap="round" stroke-linejoin="round" d="M15.75 19.5L8.25 12l7.5-7.5" />
+                            stroke="currentColor" class="w-6 h-6 stroke-white">
+                            <path stroke-linecap="round" stroke-linejoin="round"
+                                d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607z" />
                         </svg>
-                    </{{ 'span' if prev_page is none else 'a' }}>
-                    <span class="text-lg">{{ current_page }} / {{ last_page }}</span>
-                    <{{ 'span' if next_page is none else 'a' }} href="/?search={{ current_search }}&page={{ next_page }}" rel="next">
-                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5"
-                            stroke="currentColor" class="w-5 h-5 {{ 'opacity-50' if next_page is none else '' }}">
-                            <path stroke-linecap="round" stroke-linejoin="round" d="M8.25 4.5l7.5 7.5-7.5 7.5" />
-                        </svg>
-                    </{{ 'span' if next_page is none else 'a' }}>
-                </div>
-            </turbo-frame>
+                    </button>
+                </form>
+            </div>
         </div>
-    </div>
-
-</body>
-
-</html>
+    </turbo-frame>
+    <turbo-frame class="flex flex-col gap-5" id="search-result">
+        <div id="items" class="grid grid-cols-4 gap-8">
+            {% for _set in sets %}
+            <div id="set-{{ _set['index'] }}"
+                class="flex flex-col gap-4 bg-white border-orange-700/25 border p-2 rounded-sm">
+                <div class="flex flex-col gap">
+                    <p class="text-gray-700 text-lg font-bold truncate">{{ _set['set_num'] }}: {{ _set['name']}}
+                    </p>
+                    <p class="text-sm text-gray-500 truncate">
+                        <span class="flex-auto">{{ _set['name_theme'] }}</span> -
+                        <span class="flex-auto">{{ _set['year'] }}</span> -
+                        <span class="flex-auto">{{ _set['num_parts'] }} Parts</span>
+                    </p>
+                </div>
+                <div class="flex flex-row justify-between items-center">
+                    <p class="flex flex-row items-center text-base text-gray-500">
+                        <span class="mr-2">
+                            <svg height="21" width="21">
+                                <circle cx="10.5" cy="10.5" r="10" stroke="gray" stroke-width="1" fill="white" />
+                            </svg>
+                        </span>
+                        <span>White</span>
+                    </p>
+                    <a href="{{ url_for('app_routes.download_set', set_number=_set['set_num']) }}" target="_blank"
+                        data-turbo="false">
+                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5"
+                            stroke="currentColor" class="w-6 h-6">
+                            <path stroke-linecap="round" stroke-linejoin="round"
+                                d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5M16.5 12L12 16.5m0 0L7.5 12m4.5 4.5V3" />
+                        </svg>
+                    </a>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+        <div class="flex flex-row gap-1 items-center justify-center">
+            <{{ 'span' if prev_page is none else 'a' }} href="/?search={{ current_search }}&page={{ prev_page }}"
+                rel="prev">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5"
+                    stroke="currentColor" class="w-5 h-5 {{ 'opacity-50' if prev_page is none else '' }}">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M15.75 19.5L8.25 12l7.5-7.5" />
+                </svg>
+            </{{ 'span' if prev_page is none else 'a' }}>
+            <span class="text-lg">{{ current_page }} / {{ last_page }}</span>
+            <{{ 'span' if next_page is none else 'a' }} href="/?search={{ current_search }}&page={{ next_page }}"
+                rel="next">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5"
+                    stroke="currentColor" class="w-5 h-5 {{ 'opacity-50' if next_page is none else '' }}">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M8.25 4.5l7.5 7.5-7.5 7.5" />
+                </svg>
+            </{{ 'span' if next_page is none else 'a' }}>
+        </div>
+    </turbo-frame>
+</div>
+{% endblock %}

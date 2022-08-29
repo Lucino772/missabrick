@@ -51,18 +51,21 @@ def download_set(set_number: str):
     )
 
 
-@app_routes.route('/upload', methods=['POST'])
-def upload():
-    file = request.files.get('file', None)
-    if file is None:
-        abort(403)
-    
-    parts_df, minifigs_parts_df, elements_df = read_uploaded_set_excel_file(file)
+@app_routes.route('/report', methods=['GET', 'POST'])
+def report():
+    set_report = None
+    if request.method == 'POST':
+        file = request.files.get('file', None)
+        if file is None:
+            abort(403)
+        
+        parts_df, minifigs_parts_df, elements_df = read_uploaded_set_excel_file(file)
 
-    # Missing data
-    if any(map(lambda v: v is None, [parts_df, minifigs_parts_df, elements_df])):
-        abort(403)
+        # Missing data
+        if any(map(lambda v: v is None, [parts_df, minifigs_parts_df, elements_df])):
+            abort(403)
 
-    # Generate report
-    report = gen_report(parts_df, minifigs_parts_df, elements_df)
-    return jsonify(report)
+        # Generate report
+        set_report = gen_report(parts_df, minifigs_parts_df, elements_df)
+
+    return render_template('report.html', report=set_report)
