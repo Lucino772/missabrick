@@ -30,24 +30,9 @@ def index():
     sets, next_page, prev_page, last_page = paged(search_sets(search), 20, page)
     return render_template('index.html', sets=sets, current_search=search, current_page=page, prev_page=prev_page, next_page=next_page, last_page=last_page)
 
-@app_routes.route('/upload', methods=['POST'])
-def upload():
-    file = request.files.get('file', None)
-    if file is None:
-        abort(403)
-    
-    parts_df, minifigs_parts_df, elements_df = read_uploaded_set_excel_file(file)
 
-    # Missing data
-    if any(map(lambda v: v is None, [parts_df, minifigs_parts_df, elements_df])):
-        abort(403)
-
-    # Generate report
-    report = gen_report(parts_df, minifigs_parts_df, elements_df)
-    return jsonify(report)
-
-@app_routes.route('/set/<set_number>/file', methods=['GET'])
-def get_file(set_number: str):
+@app_routes.route('/download/<set_number>', methods=['GET'])
+def download_set(set_number: str):
     if not set_exists(set_number):
         abort(404)
 
@@ -64,3 +49,20 @@ def get_file(set_number: str):
             'filename': f'{set_number}.xlsx'
         }
     )
+
+
+@app_routes.route('/upload', methods=['POST'])
+def upload():
+    file = request.files.get('file', None)
+    if file is None:
+        abort(403)
+    
+    parts_df, minifigs_parts_df, elements_df = read_uploaded_set_excel_file(file)
+
+    # Missing data
+    if any(map(lambda v: v is None, [parts_df, minifigs_parts_df, elements_df])):
+        abort(403)
+
+    # Generate report
+    report = gen_report(parts_df, minifigs_parts_df, elements_df)
+    return jsonify(report)

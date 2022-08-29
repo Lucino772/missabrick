@@ -67,7 +67,7 @@
                                 </span>
                                 <span>White</span>
                             </p>
-                            <a href="/test" data-turbo="false">
+                            <a href="{{ url_for('app_routes.download_set', set_number=_set['set_num']) }}" target="_blank" data-turbo="false">
                                 <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
                                     stroke-width="1.5" stroke="currentColor" class="w-6 h-6">
                                     <path stroke-linecap="round" stroke-linejoin="round"
