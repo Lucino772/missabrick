@@ -1,4 +1,5 @@
 import typing
+import json
 import pandas as pd
 
 def _concat_dataframes(frames: typing.Iterable[pd.DataFrame]):
@@ -155,3 +156,17 @@ def gen_report(parts: pd.DataFrame, fig_parts: pd.DataFrame, elements: pd.DataFr
         'parts': parts_data,
         'fig_parts': fig_parts_data
     }
+
+
+def search_sets(search):
+    all_sets = pd.read_csv('./datasets/sets.csv')
+
+    filtered_sets = all_sets
+    if search is not None or search != '':
+        filtered_sets = all_sets[all_sets['set_num'].str.startswith(search)]
+
+    all_themes = pd.read_csv('./datasets/themes.csv')
+    sets_with_theme = filtered_sets.join(all_themes.set_index('id').filter(items=['name']), on='theme_id', rsuffix='_theme')
+    json_data = json.loads(sets_with_theme.to_json(orient='table'))['data']
+
+    return json_data
