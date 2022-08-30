@@ -16,6 +16,8 @@ class DevelopmentConfig(Config):
     DEBUG = True
     ENV = 'development'
 
+    SQLALCHEMY_DATABASE_URI = os.environ.get('DEV_DATABASE_URL', 'sqlite:///' + os.path.join(basedir, 'db-dev.sqlite'))
+
 config = {
     'development': DevelopmentConfig,
     'default': DevelopmentConfig

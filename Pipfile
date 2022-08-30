@@ -9,6 +9,7 @@ pandas = "*"
 openpyxl = "*"
 requests = "*"
 python-dotenv = "*"
+flask-sqlalchemy = "*"
 
 [dev-packages]
 

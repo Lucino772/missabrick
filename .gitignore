@@ -4,6 +4,7 @@
 
 ### Datasets ###
 datasets
+*.sqlite
 
 ### Bower ###
 .bower
