@@ -8,6 +8,7 @@ flask = "*"
 pandas = "*"
 openpyxl = "*"
 requests = "*"
+python-dotenv = "*"
 
 [dev-packages]
 
