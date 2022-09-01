@@ -45,6 +45,7 @@ class InventoryParts(db.Model):
     color_id = db.Column(db.Integer, db.ForeignKey('colors.id'))
     quantity = db.Column(db.Integer)
     is_spare = db.Column(db.String(10), nullable=False)
+    img_url = db.Column(db.Text, nullable=True)
 
 class InventorySets(db.Model):
     __tablename__ = 'inventory_sets'
@@ -60,6 +61,7 @@ class Minifig(db.Model):
     fig_num = db.Column(db.String(20), primary_key=True)
     name = db.Column(db.String(256), nullable=False)
     num_parts = db.Column(db.Integer, nullable=False)
+    img_url = db.Column(db.Text, nullable=True)
 
 class PartCategory(db.Model):
     __tablename__ = 'part_categories'
@@ -96,6 +98,8 @@ class Set(db.Model):
     theme = db.relationship('Theme', backref=db.backref('sets', lazy=False))
 
     num_parts = db.Column(db.Integer, nullable=False)
+
+    img_url = db.Column(db.Text, nullable=True)
 
 class Theme(db.Model):
     __tablename__ = 'themes'

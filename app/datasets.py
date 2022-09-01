@@ -2,6 +2,9 @@ import typing
 import json
 import pandas as pd
 
+from app import db
+from sqlalchemy import text
+
 PARTS_COLS = ['part_num','color_id','quantity','is_spare','color_name','color_rgb','color_is_trans','part_name','part_cat_id','part_material']
 MINIFIGS_PARTS_COLS = ['part_num','color_id','quantity','is_spare','color_name','color_rgb','color_is_trans','part_name','part_cat_id','part_material','fig_num']
 ELEMENTS_COLS = ['part_num','color_id','element_id']
@@ -13,14 +16,31 @@ def _concat_dataframes(frames: typing.Iterable[pd.DataFrame], columns: list):
     return pd.DataFrame(columns=columns)
 
 def _get_inventories(set_number: str):
-    inventories = pd.read_csv('./datasets/inventories.csv')
+    with db.get_engine().connect() as conn:
+        result = conn.execute(text('''
+        WITH tmp_inv AS (
+            SELECT * FROM inventories
+            WHERE set_num = :set_number
+        )
+        SELECT * FROM tmp_inv
+        WHERE version >= (SELECT MAX(version) from tmp_inv)
+        '''), { 'set_number': set_number })
 
-    all_invs = inventories[inventories['set_num'] == set_number]
-    invs = all_invs[all_invs['version'] >= all_invs['version'].max()]
-
-    return invs['id']
+        ids = [item.id for item in result.all()]
+        return ids
 
 def _get_inventory_sets(inventories: typing.Iterable[int], quantity: int = 1):
+    with db.get_engine().connect() as conn:
+        result = conn.execute(text(
+        '''
+        SELECT sets.*, inventory_sets.quantity
+        FROM inventory_sets, sets
+        WHERE inventory_sets.inventory_id IN (:inventories) 
+              AND inventory_sets.set_num = sets.set_num
+        '''
+        ), {'inventories': ','.join([str(i) for i in inventories])})
+        print(result.all())
+
     all_sets_df = pd.read_csv('./datasets/sets.csv')
     inventory_sets_df = pd.read_csv('./datasets/inventory_sets.csv')
 
@@ -31,6 +51,64 @@ def _get_inventory_sets(inventories: typing.Iterable[int], quantity: int = 1):
     return fsets
 
 def _get_inventory_parts(inventories: typing.Iterable[int], quantity: int = 1):
+    with db.get_engine().connect() as conn:
+        result = conn.execute(text(
+        '''
+        SELECT p.part_num,
+               p.name AS part_name,
+               p.part_cat_id,
+               p.part_material,
+               c.id AS color_id,
+               c.name AS color_name,
+               c.rgb AS color_rgb,
+               c.is_trans AS color_is_trans,
+               ip.quantity * :quantity,
+               ip.is_spare
+        FROM inventory_parts AS ip,
+             parts AS p,
+             colors AS c
+        WHERE ip.inventory_id IN (:inventories)
+              AND c.id = ip.color_id
+              AND p.part_num = ip.part_num
+        '''
+        ), {
+            'inventories': ','.join([str(i) for i in inventories]),
+            'quantity': quantity
+        })
+        print(result.all())
+
+        result2 = conn.execute(text(
+        '''
+        WITH tmp AS (
+            SELECT p.part_num,
+               p.name AS part_name,
+               p.part_cat_id,
+               p.part_material,
+               c.id AS color_id,
+               c.name AS color_name,
+               c.rgb AS color_rgb,
+               c.is_trans AS color_is_trans,
+               ip.quantity * :quantity,
+               ip.is_spare
+            FROM inventory_parts AS ip,
+                parts AS p,
+                colors AS c
+            WHERE ip.inventory_id IN (:inventories)
+                AND c.id = ip.color_id
+                AND p.part_num = ip.part_num
+        )
+        SELECT p.part_num, p.color_id, e.element_id
+        FROM tmp AS p
+        LEFT JOIN elements AS e
+              ON p.part_num = e.part_num
+              AND p.color_id = e.color_id
+        '''
+        ), {
+            'inventories': ','.join([str(i) for i in inventories]),
+            'quantity': quantity
+        })
+        print(result2.all())
+
     colors_df = pd.read_csv('./datasets/colors.csv').rename(columns={'name': 'color_name', 'rgb': 'color_rgb', 'is_trans': 'color_is_trans'})
     all_parts_df = pd.read_csv('./datasets/parts.csv').rename(columns={'name': 'part_name'})
     all_elements_df = pd.read_csv('./datasets/elements.csv')
@@ -69,47 +147,127 @@ def set_exists(set_number: str):
     return (all_sets_df['set_num'] == set_number).any()
 
 def get_set_data(set_number: str, quantity: int = 1):
-    set_inventories = _get_inventories(set_number)
+    with db.get_engine().connect() as conn:
+        conn.execute(text(
+            '''
+            CREATE TEMP TABLE inventory_ids
+            AS SELECT id, set_num, :quantity AS quantity
+            FROM inventories
+            WHERE set_num = :set_number
+                 AND version >= (SELECT MAX(version) FROM inventories WHERE set_num = :set_number)
+            '''
+        ), {'set_number': set_number, 'quantity': quantity })
+        conn.execute(text(
+            '''
+            CREATE TEMP TABLE check_has_sets
+            AS SELECT id, quantity FROM inventory_ids
+            '''
+        ))
+        
+        check_has_sets_ids = [i.id for i in conn.execute('SELECT * FROM check_has_sets').all()]
+        while len(check_has_sets_ids) > 0:
+            conn.execute(text(
+                '''
+                CREATE TEMP TABLE sets_inventories
+                AS SELECT inventories.id AS id, sets.set_num AS set_num, inventory_sets.quantity * check_has_sets.quantity AS quantity
+                FROM inventory_sets, sets, inventories, check_has_sets
+                WHERE inventory_sets.inventory_id = check_has_sets.id 
+                    AND inventory_sets.set_num = sets.set_num
+                    AND inventories.set_num = sets.set_num
+                '''
+            ))
 
-    _sets = _get_inventory_sets(set_inventories, quantity=quantity)
-    _parts, _parts_elements = _get_inventory_parts(set_inventories, quantity=quantity)
-    _minifigs = _get_inventory_minifigs(set_inventories, quantity=quantity)
+            conn.execute(text('INSERT INTO inventory_ids SELECT * FROM sets_inventories'))
+            conn.execute(text('DELETE FROM check_has_sets'))
+            conn.execute(text('INSERT INTO check_has_sets SELECT id, quantity FROM sets_inventories'))
+            conn.execute(text('DROP TABLE sets_inventories'))
 
-    if not _sets.empty:
-        assert _parts.empty, "Set has multiple sub-sets but also contains parts !"
-        assert _minifigs.empty, "Set has multiple sub-sets but also contains minifigs !"
+            check_has_sets_ids = [i.id for i in conn.execute('SELECT * FROM check_has_sets').all()]
 
-        _parts_list = []
-        _minifigs_parts_list = []
-        _elements_list = []
+        conn.execute(text(
+            '''
+            CREATE TEMP TABLE set_parts 
+            AS SELECT 
+               ids.set_num,
+               p.part_num,
+               p.name AS part_name,
+               p.part_cat_id,
+               p.part_material,
+               c.id AS color_id,
+               c.name AS color_name,
+               c.rgb AS color_rgb,
+               c.is_trans AS color_is_trans,
+               ip.quantity * ids.quantity AS quantity,
+               ip.is_spare AS is_spare
+            FROM inventory_parts AS ip,
+                parts AS p,
+                colors AS c,
+                inventory_ids AS ids
+            WHERE ip.inventory_id = ids.id
+                AND c.id = ip.color_id
+                AND p.part_num = ip.part_num
+            '''
+        ))
 
-        for _, _set in _sets.iterrows():
-            parts, minifigs_parts, elements = get_set_data(_set['set_num'], quantity=_set['quantity'])
-            parts['set_num'] = _set['set_num']
-            minifigs_parts['parent_set'] = _set['set_num']
-            elements['set_num'] = _set['set_num']
+        conn.execute(text(
+            '''
+            CREATE TEMP TABLE set_minifigs
+            AS SELECT i.id AS id, ids.set_num AS set_num, iv.fig_num, iv.quantity * ids.quantity AS quantity
+            FROM inventory_minifigs AS iv,
+                 inventories AS i,
+                 inventory_ids AS ids
+            WHERE iv.inventory_id = ids.id
+                AND i.set_num = iv.fig_num 
+            '''
+        ))
 
-            _parts_list.append(parts)
-            _minifigs_parts_list.append(minifigs_parts)
-            _elements_list.append(elements)
+        conn.execute(text(
+            '''
+            CREATE TEMP TABLE set_minifigs_parts 
+            AS SELECT 
+               ids.set_num,
+               ids.fig_num,
+               p.part_num,
+               p.name AS part_name,
+               p.part_cat_id,
+               p.part_material,
+               c.id AS color_id,
+               c.name AS color_name,
+               c.rgb AS color_rgb,
+               c.is_trans AS color_is_trans,
+               ip.quantity * ids.quantity AS quantity,
+               ip.is_spare AS is_spare
+            FROM inventory_parts AS ip,
+                parts AS p,
+                colors AS c,
+                set_minifigs AS ids
+            WHERE ip.inventory_id = ids.id
+                AND c.id = ip.color_id
+                AND p.part_num = ip.part_num
+            '''
+        ))
 
-        return _concat_dataframes(_parts_list, PARTS_COLS), _concat_dataframes(_minifigs_parts_list, MINIFIGS_PARTS_COLS), _concat_dataframes(_elements_list, ELEMENTS_COLS)
+        _parts = conn.execute('SELECT * FROM set_parts').all()
+        _minifigs_parts = conn.execute('SELECT * FROM set_minifigs_parts').all()
+        _elements = conn.execute(text(
+            '''
+            SELECT p.set_num, p.part_num, p.color_id, e.element_id
+            FROM set_parts AS p
+            LEFT JOIN elements AS e
+                 ON p.part_num = e.part_num
+                 AND p.color_id = e.color_id
+            
+            UNION
 
-    # Get parts for minifigs and concatenate all elements
-    _minifigs_parts_list = []
-    _minifigs_elements_list = []
-    for _, minifig in _minifigs.iterrows():
-        _minifigs_inventories = _get_inventories(minifig['fig_num'])
-        _minifig_parts, _minifig_elements = _get_inventory_parts(_minifigs_inventories, quantity=minifig['quantity'])
-        _minifig_parts['fig_num'] = minifig['fig_num']
-        _minifigs_parts_list.append(_minifig_parts)
-        _minifigs_elements_list.append(_minifig_elements)
-    
-    _minifigs_parts = _concat_dataframes(_minifigs_parts_list, MINIFIGS_PARTS_COLS)
-    _elements = _concat_dataframes([_parts_elements] + _minifigs_elements_list, ELEMENTS_COLS)
+            SELECT p.set_num, p.part_num, p.color_id, e.element_id
+            FROM set_minifigs_parts AS p
+            LEFT JOIN elements AS e
+                 ON p.part_num = e.part_num
+                 AND p.color_id = e.color_id
+            '''
+        )).all()
 
-    return _parts, _minifigs_parts, _elements
-
+    return pd.DataFrame(_parts), pd.DataFrame(_minifigs_parts), pd.DataFrame(_elements)
 
 def _find_first_key(possible_values: typing.Iterable[str], search_list: typing.Iterable[str]):
     for key in possible_values:

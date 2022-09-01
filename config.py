@@ -7,6 +7,7 @@ basedir = os.path.abspath(os.path.dirname(__file__))
 class Config:
     SECRET_KEY = os.environ.get('SECRET_KEY', secrets.token_hex())
     MAX_CONTENT_LENGTH = 100000 # 100 KB
+    SQLALCHEMY_TRACK_MODIFICATIONS = False
 
     @staticmethod
     def init_app(app):
