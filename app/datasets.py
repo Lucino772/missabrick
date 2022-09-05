@@ -3,27 +3,17 @@ import json
 import pandas as pd
 
 from app import db
+from app.database import utils as db_utils
 
 def set_exists(set_number: str):
     with db as conn:
-        res = (
-            conn.cursor()
-                .execute(f'''
-                    SELECT COUNT(*) AS cnt
-                    FROM sets
-                    WHERE set_num = '{set_number}'
-                ''')
-                .fetchone()
-        )
+        res = db_utils.execute_query('set_exists.sql', conn, { 'set_number': set_number }).fetchone()
     
     return res['cnt'] > 0
 
 def get_set_data(set_number: str, quantity: int = 1):
-    with open('./app/database/scripts/fetch_set_data.sql.template', 'r') as fp:
-        script = fp.read()
-
     with db as conn:
-        conn.executescript(script.format(set_number=set_number, quantity=quantity))
+        db_utils.execute_script('fetch_set_data.sql.template', conn, set_number=set_number, quantity=quantity)
 
         _parts = pd.read_sql_query('SELECT * FROM set_parts', conn)
         _minifigs_parts = pd.read_sql_query('SELECT * FROM set_minifigs_parts', conn)
@@ -66,14 +56,14 @@ def search_sets(search):
     with db as conn:
         if search:
             query = f'''
-                SELECT *
+                SELECT *, themes.name AS name_theme
                 FROM sets, themes
                 WHERE sets.set_num = '{search}'
                     AND themes.id = sets.theme_id
             '''
         else:
             query = '''
-                SELECT *
+                SELECT *, themes.name AS name_theme
                 FROM sets, themes
                 WHERE themes.id = sets.theme_id
             '''

@@ -3,9 +3,11 @@ from config import config
 
 from app.database import SQLiteDatabase
 from app.database.sqlite import SQLiteCLI
+from app.database.rebrickable import RebrickableDownloads
 
 db = SQLiteDatabase('./db-dev.sqlite')
 db_cli = SQLiteCLI('./db-dev.sqlite')
+rebrickable = RebrickableDownloads(db_cli)
 
 def create_app(config_name: str):
     app = Flask(__name__)
