@@ -1,6 +1,10 @@
 import os
 from subprocess import getstatusoutput
 
+from app.logging import get_logger
+
+logger = get_logger(__name__)
+
 class SQLiteCLI:
 
     def __init__(self, database_uri: str) -> None:
@@ -14,8 +18,9 @@ class SQLiteCLI:
         return True
 
     def _dotcmd(self, *cmds):
-        cmd = ['sqlite3', self.__database_uri, '-cmd'] + [ f'"{cmd}"' for cmd in cmds]
-        return getstatusoutput(' '.join(cmd))
+        cmd = ' '.join(['sqlite3', self.__database_uri, '-cmd'] + [ f'"{cmd}"' for cmd in cmds])
+        logger.debug('Executing SQLite3 dot command: {}'.format(cmd))
+        return getstatusoutput(cmd)
 
     def import_csv(self, file: str, table: str = None):
         if table is None:

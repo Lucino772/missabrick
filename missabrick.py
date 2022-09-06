@@ -7,13 +7,15 @@ if os.path.exists(dotenv_path):
 
 from app import create_app, db, db_cli, rebrickable
 from app.database import utils as db_utils
+from app.logging import get_logger
 
+logger = get_logger(__name__)
 app = create_app(os.getenv('FLASK_CONFIG', 'default'))
 
 @app.cli.command()
 def deploy():    
     if not db_cli.check_installation():
-        print('SQLite3 shell not found ! Data cannot be imported')
+        logger.error('SQLite3 shell not found ! Data cannot be imported')
         exit(1)
 
     rebrickable.download()

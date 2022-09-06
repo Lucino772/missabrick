@@ -1,6 +1,10 @@
 import sqlite3
 import threading
 
+from app.logging import get_logger
+
+logger = get_logger(__name__)
+
 class _LocalDB(threading.local):
     
     def __init__(self, conn: sqlite3.Connection = None) -> None:
@@ -33,6 +37,7 @@ class SQLiteDatabase:
         conn = sqlite3.connect(self.__database_uri)
         conn.set_trace_callback(print)
         conn.row_factory = sqlite3.Row
+        logger.debug('New SQLite3 connection to {}'.format(self.__database_uri))
 
         self.__connections.append(conn)
         self.__local_data.current = conn
@@ -41,6 +46,7 @@ class SQLiteDatabase:
 
     def _close_local_connection(self):
         if self.__local_data.current is not None:
+            logger.debug('Closed SQLite3 connection to {}'.format(self.__database_uri))
             self.__connections.remove(self.__local_data.current)
             self.__local_data.current.close()
 

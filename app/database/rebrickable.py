@@ -5,6 +5,9 @@ import tempfile
 import shutil
 
 from app.database.sqlite import SQLiteCLI
+from app.logging import get_logger
+
+logger = get_logger(__name__)
 
 _DATA_URLS = [
     'https://cdn.rebrickable.com/media/downloads/themes.csv.gz',
@@ -46,14 +49,14 @@ class RebrickableDownloads:
         for url in _DATA_URLS:
             filename = self._get_files_dest(url)
             _donwload_gzip_file(url, filename)
-            print('Downloaded:', filename)
+            logger.info('Downloaded file {} ({})'.format(filename, url))
     
     def import2db(self):
         for filename in map(self._get_files_dest, _DATA_URLS):
             table_name = os.path.splitext(os.path.basename(filename))[0]
-            print(f'Importing data from {filename} in {table_name}: ', end='', flush=True)
+            logger.info('Importing data from {} in {}'.format(filename, table_name))
             ecode, _ = self.__db_cli.import_csv(filename.replace('\\', '\/'), table_name)
             if ecode == 0:
-                print('OK')
+                logger.info('Data successfully imported to {}'.format(table_name))
             else:
-                print('Failed')
+                logger.info('Failed to import data to {}'.format(table_name))
