@@ -5,29 +5,11 @@ from app.main import main
 from app.datasets import gen_report, get_set_data, set_exists, search_sets
 from app.utils import create_temp_set_excel_file, stream_file_and_remove, read_uploaded_set_excel_file
 
-def paged(_list: list, size: int, current: int):
-    if current == 0:
-        current = 1
-
-    _last = len(_list) // size + (0 if len(_list) % size == 0 else 1)
-    _from, _to = 0 + (size * (current - 1)), size * current
-    section = _list[_from:_to]
-    
-    _next = current + 1
-    if _next > _last:
-        _next = None
-
-    _prev = current - 1
-    if _prev < 1:
-        _prev = None
-
-    return section, _next, _prev, _last
-
 @main.route('/', methods=['GET'])
 def index():
     page = request.args.get('page', 1, type=int)
     search = request.args.get('search', '', type=str)
-    sets, next_page, prev_page, last_page = paged(search_sets(search), 20, page)
+    sets, next_page, prev_page, last_page = search_sets(search, page, 20)
     return render_template('index.html', sets=sets, current_search=search, current_page=page, prev_page=prev_page, next_page=next_page, last_page=last_page)
 
 

@@ -52,22 +52,22 @@ def gen_report(parts: pd.DataFrame, fig_parts: pd.DataFrame, elements: pd.DataFr
         'fig_parts': fig_parts_data
     }
 
-def search_sets(search):
+def search_sets(search: str, current_page: int, page_size: int):
+    _offset = 0 + (page_size * (current_page - 1))
     with db as conn:
-        if search:
-            query = f'''
-                SELECT *, themes.name AS name_theme
-                FROM sets, themes
-                WHERE sets.set_num = '{search}'
-                    AND themes.id = sets.theme_id
-            '''
-        else:
-            query = '''
-                SELECT *, themes.name AS name_theme
-                FROM sets, themes
-                WHERE themes.id = sets.theme_id
-            '''
+        cursor = db_utils.execute_script('search_sets.sql', conn, search=search.strip(), page_size=page_size, offset=_offset)
+        cnt = cursor.execute('SELECT total_rows from sets_count').fetchone()
+        
+        _last = cnt['total_rows'] // page_size + (0 if cnt['total_rows'] % page_size == 0 else 1)
+        
+        _next = current_page + 1
+        if _next > _last:
+            _next = None
 
-        sets = pd.read_sql_query(query, conn)
+        _prev = current_page - 1
+        if _prev < 1:
+            _prev = None
 
-    return json.loads(sets.to_json(orient='table'))['data']
+        sets = pd.read_sql_query('SELECT * FROM found_sets', conn)
+
+    return json.loads(sets.to_json(orient='table'))['data'], _next, _prev, _last
