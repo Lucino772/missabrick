@@ -9,6 +9,7 @@ openpyxl = "*"
 requests = "*"
 python-dotenv = "*"
 django = "*"
+django-extensions = "*"
 
 [dev-packages]
 

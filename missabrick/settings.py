@@ -37,6 +37,12 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    
+    # Add django extensions
+    'django_extensions',
+
+    # Add custom lego app
+    'legoapp'
 ]
 
 MIDDLEWARE = [
