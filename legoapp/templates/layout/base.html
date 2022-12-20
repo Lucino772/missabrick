@@ -1,0 +1,31 @@
+{% load compress %}
+{% load static %}
+
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MissABrick</title>
+    {% compress css %}
+    <link rel="stylesheet" href="{% static 'src/output.css' %}">
+    {% endcompress %}
+</head>
+
+<body style="background-color: #F3F3F3;">
+    <div class="container mx-auto h-screen">
+        <div class="flex w-full justify-between items-center py-2">
+            <p class="text-orange-700 font-bold text-xl">Miss A Brick</p>
+            <nav class="flex gap-8 text-gray-500 font-normal leading-7">
+                <a href="/" data-turbo-frame="content">Home</a>
+                <a href="/report" data-turbo-frame="content">Report</a>
+            </nav>
+        </div>
+        
+        <turbo-frame id="content" data-turbo-action="advance">
+            {% block content %}{% endblock %}
+        </turbo-frame>
+    </div>
+</body>

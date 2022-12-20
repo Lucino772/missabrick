@@ -1,6 +1,9 @@
 import pandas as pd
-from django.shortcuts import HttpResponse
-from functools import reduce
+import typing
+import json
+from django.shortcuts import HttpResponse, render
+from django.http import HttpRequest
+from django.core.paginator import Paginator
 
 import os
 
@@ -101,64 +104,63 @@ def get_set_data(set_number: str, quantity: int = 1):
 
     return _parts, _fig_parts, _elements
 
-# def _find_first_key(possible_values: typing.Iterable[str], search_list: typing.Iterable[str]):
-#     for key in possible_values:
-#         if key in search_list:
-#             return key
+def _find_first_key(possible_values: typing.Iterable[str], search_list: typing.Iterable[str]):
+    for key in possible_values:
+        if key in search_list:
+            return key
 
-# def gen_report(parts: pd.DataFrame, fig_parts: pd.DataFrame, elements: pd.DataFrame):
-#     count_keys = ['count', 'current']
-#     parts_count_key = _find_first_key(count_keys, parts.columns)
-#     fig_parts_count_key = _find_first_key(count_keys, fig_parts.columns)
+def gen_report(parts: pd.DataFrame, fig_parts: pd.DataFrame, elements: pd.DataFrame):
+    count_keys = ['count', 'current']
+    parts_count_key = _find_first_key(count_keys, parts.columns)
+    fig_parts_count_key = _find_first_key(count_keys, fig_parts.columns)
 
-#     if parts_count_key is None:
-#         parts['count'] = 0
-#         parts_count_key = 'count'
+    if parts_count_key is None:
+        parts['count'] = 0
+        parts_count_key = 'count'
 
-#     if fig_parts_count_key is None:
-#         fig_parts['count'] = 0
-#         fig_parts_count_key = 'count'
+    if fig_parts_count_key is None:
+        fig_parts['count'] = 0
+        fig_parts_count_key = 'count'
 
-#     # Calculate missing pieces
-#     parts['missing'] = parts['quantity'] - parts[parts_count_key]
-#     fig_parts['missing'] = fig_parts['quantity'] - fig_parts[fig_parts_count_key]
-
-
-#     parts_data = json.loads(parts.to_json(orient='table')).get('data', [])
-#     fig_parts_data = json.loads(fig_parts.to_json(orient='table')).get('data', [])
-
-#     return {
-#         'parts': parts_data,
-#         'fig_parts': fig_parts_data
-#     }
-
-# def search_sets(search: str, current_page: int, page_size: int):
-#     _offset = 0 + (page_size * (current_page - 1))
-#     with db as conn:
-#         cursor = db_utils.execute_script('search_sets.sql', conn, search=search.strip(), page_size=page_size, offset=_offset)
-#         cnt = cursor.execute('SELECT total_rows from sets_count').fetchone()
-        
-#         _last = cnt['total_rows'] // page_size + (0 if cnt['total_rows'] % page_size == 0 else 1)
-        
-#         _next = current_page + 1
-#         if _next > _last:
-#             _next = None
-
-#         _prev = current_page - 1
-#         if _prev < 1:
-#             _prev = None
-
-#         sets = pd.read_sql_query('SELECT * FROM found_sets', conn)
-
-#     return json.loads(sets.to_json(orient='table'))['data'], _next, _prev, _last
+    # Calculate missing pieces
+    parts['missing'] = parts['quantity'] - parts[parts_count_key]
+    fig_parts['missing'] = fig_parts['quantity'] - fig_parts[fig_parts_count_key]
 
 
-def index(request):
-    # page = request.args.get('page', 1, type=int)
-    # search = request.args.get('search', '', type=str)
-    # sets, next_page, prev_page, last_page = search_sets(search, page, 20)
-    # return render_template('index.html', sets=sets, current_search=search, current_page=page, prev_page=prev_page, next_page=next_page, last_page=last_page)
-    return HttpResponse("Index Page")
+    parts_data = json.loads(parts.to_json(orient='table')).get('data', [])
+    fig_parts_data = json.loads(fig_parts.to_json(orient='table')).get('data', [])
+
+    return {
+        'parts': parts_data,
+        'fig_parts': fig_parts_data
+    }
+
+def search_sets(search: str, current_page: int, page_size: int):
+    sets_qs = Set.objects.filter(set_num__contains=search.strip())
+    paginator = Paginator(sets_qs, page_size)
+    page = paginator.page(current_page)
+
+    return (
+        page.object_list, 
+        page.next_page_number() if page.has_next() else None,
+        page.previous_page_number() if page.has_previous() else None,
+        paginator.num_pages
+    )
+
+
+def index(request: HttpRequest):
+    page = request.GET.get('page', 1)
+    search = request.GET.get('search', '')
+    sets, next_page, prev_page, last_page = search_sets(search, page, 20)
+
+    return render(request, 'index.html', context={
+        'sets': sets,
+        'current_search': search,
+        'current_page': page,
+        'prev_page': prev_page,
+        'next_page': next_page,
+        'last_page': last_page
+    })
 
 def download_set(request):
     if not set_exists('9493-1'):

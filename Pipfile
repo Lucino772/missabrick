@@ -10,6 +10,7 @@ requests = "*"
 python-dotenv = "*"
 django = "*"
 django-extensions = "*"
+django-compressor = "*"
 
 [dev-packages]
 

@@ -42,7 +42,10 @@ INSTALLED_APPS = [
     'django_extensions',
 
     # Add custom lego app
-    'legoapp'
+    'legoapp',
+
+    # Compressor
+    'compressor'
 ]
 
 MIDDLEWARE = [
@@ -127,3 +130,10 @@ STATIC_URL = 'static/'
 # https://docs.djangoproject.com/en/4.1/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
+# Compressor Config
+COMPRESS_ROOT = BASE_DIR / 'static'
+
+COMPRESS_ENABLED = True
+
+STATICFILES_FINDERS = ('compressor.finders.CompressorFinder',)
