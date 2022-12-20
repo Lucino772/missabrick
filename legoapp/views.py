@@ -105,9 +105,9 @@ def get_set_data(set_number: str, quantity: int = 1):
 
                 yield item
 
-    _parts = pd.DataFrame(_format_parts(parts))
-    _fig_parts = pd.DataFrame(_format_parts(fig_parts))
-    _elements = pd.DataFrame(_format_elements(parts + fig_parts))
+    _parts = pd.DataFrame(_format_parts(parts), columns=['set_num', 'part_num', 'part_name', 'part_material', 'color_id', 'color_name', 'color_rgb', 'color_is_trans', 'is_spare', 'img_url', 'quantity'])
+    _fig_parts = pd.DataFrame(_format_parts(fig_parts), columns=['set_num', 'fig_num', 'part_num', 'part_name', 'part_material', 'color_id', 'color_name', 'color_rgb', 'color_is_trans', 'is_spare', 'img_url', 'quantity'])
+    _elements = pd.DataFrame(_format_elements(parts + fig_parts), columns=['set_num', 'part_num', 'color_id', 'element_id'])
 
     return _parts, _fig_parts, _elements
 
