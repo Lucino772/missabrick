@@ -4,6 +4,7 @@ import json
 from django.shortcuts import HttpResponse, render
 from django.http import HttpRequest
 from django.core.paginator import Paginator
+from django.core.files.temp import NamedTemporaryFile
 
 import os
 
@@ -11,6 +12,7 @@ from legoapp.models import (Color, Element, Inventory, InventoryMinifigs,
                             InventoryParts, InventorySets, Minifig, Part,
                             PartsCategory, PartsRelationship, Set, Theme)
 
+# DB
 def set_exists(set_number: str):
     return Set.objects.count() > 0
 
@@ -40,8 +42,8 @@ def get_set_data(set_number: str, quantity: int = 1):
         for inv_fig in inv_set.inventoryminifigs_set.all():
             fig_parts.append((
                 inv_set._set.set_num, 
-                inv_fig.minifig.fig_num, 
-                inv_fig.inventory.inventoryparts_set.all(), 
+                inv_fig.minifig.fig_num,
+                inv_fig.minifig.inventory_set.order_by('version').first().inventoryparts_set.all(),
                 _quantity * inv_fig.quantity
             ))
 
@@ -147,7 +149,25 @@ def search_sets(search: str, current_page: int, page_size: int):
         paginator.num_pages
     )
 
+# Utils
+def send_temp_file(set_number: str, parts: pd.DataFrame, fig_parts: pd.DataFrame, elements: pd.DataFrame):
+    fp = NamedTemporaryFile()
+    with pd.ExcelWriter(fp.name, engine="openpyxl") as writer:
+        parts.to_excel(writer, sheet_name='parts', index=False)
+        fig_parts.to_excel(writer, sheet_name='minifigs', index=False)
+        elements.to_excel(writer, sheet_name='elements', index=False)
 
+    nbytes = os.stat(fp.name).st_size
+    with open(fp.name, 'rb') as fp:
+        response = HttpResponse(fp.read(), content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
+        response['Content-Disposition'] = 'inline; filename={}'.format(f'{set_number}.xlsx')
+        response['Content-Length'] = nbytes
+        response['filename'] = f'{set_number}.xlsx'
+
+    os.unlink(fp.name)
+    return response
+
+# Views
 def index(request: HttpRequest):
     page = request.GET.get('page', 1)
     search = request.GET.get('search', '')
@@ -162,28 +182,13 @@ def index(request: HttpRequest):
         'last_page': last_page
     })
 
-def download_set(request):
-    if not set_exists('9493-1'):
-        pass
-
+def download_set(request: HttpRequest, set_number: str):
     # get_set_data('9493-1')
-    get_set_data('5006061-1')
+    # get_set_data('5006061-1')
     # get_set_data('K8672-1')
 
-    # parts, minifigs_parts, elements = get_set_data(set_number)
-    # fd, filename = create_temp_set_excel_file(parts, minifigs_parts, elements)
-    # nbytes = os.stat(filename).st_size
-
-    # return current_app.response_class(
-    #     stream_file_and_remove(filename, fd),
-    #     headers={
-    #         'Content-Disposition': 'attachment', 
-    #         'Content-Length': nbytes,
-    #         'Content-Type': 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
-    #         'filename': f'{set_number}.xlsx'
-    #     }
-    # )
-    return HttpResponse("Download Set")
+    parts, minifigs_parts, elements = get_set_data(set_number)
+    return send_temp_file(set_number, parts, minifigs_parts, elements)
 
 def report(request):
     # set_report = None
