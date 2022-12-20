@@ -11,6 +11,7 @@ python-dotenv = "*"
 django = "*"
 django-extensions = "*"
 django-compressor = "*"
+turbo-django = "*"
 
 [dev-packages]
 

@@ -41,11 +41,14 @@ INSTALLED_APPS = [
     # Add django extensions
     'django_extensions',
 
-    # Add custom lego app
-    'legoapp',
+    # Turbo
+    'turbo',
 
     # Compressor
-    'compressor'
+    'compressor',
+
+    # Add custom lego app
+    'legoapp',
 ]
 
 MIDDLEWARE = [
@@ -76,7 +79,7 @@ TEMPLATES = [
     },
 ]
 
-WSGI_APPLICATION = 'missabrick.wsgi.application'
+ASGI_APPLICATION  = 'missabrick.asgi.application'
 
 
 # Database
@@ -133,7 +136,9 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 # Compressor Config
 COMPRESS_ROOT = BASE_DIR / 'static'
-
 COMPRESS_ENABLED = True
-
-STATICFILES_FINDERS = ('compressor.finders.CompressorFinder',)
+STATICFILES_FINDERS = (
+    'compressor.finders.CompressorFinder',
+    'django.contrib.staticfiles.finders.FileSystemFinder',
+    'django.contrib.staticfiles.finders.AppDirectoriesFinder'
+)
