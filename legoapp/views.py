@@ -1,5 +1,6 @@
+import pandas as pd
 from django.shortcuts import HttpResponse
-from django.db.models import Max
+from functools import reduce
 
 import os
 
@@ -10,34 +11,95 @@ from legoapp.models import (Color, Element, Inventory, InventoryMinifigs,
 def set_exists(set_number: str):
     return Set.objects.count() > 0
 
+def _fetch_inventories_from_sets(set_number: str, quantity: int = 1):
+    _set = Set.objects.get(set_num=set_number)
+    inv = Inventory.objects.filter(_set=_set).order_by('version').first()
+    inv_sets = inv.inventorysets_set.all()
+
+    inventories = [(inv, quantity)]
+
+    for inv_set in inv_sets:
+        inventories += _fetch_inventories_from_sets(inv_set._set.set_num, inv_set.quantity * quantity)
+
+    return inventories
+
 def get_set_data(set_number: str, quantity: int = 1):
-    query = """
-    WITH RECURSIVE check_set AS (
-        SELECT id, set_num, {quantity} AS quantity
-        FROM legoapp_inventory
-        WHERE set_num = '{set_number}'
-            AND version >= (SELECT MAX(version) FROM legoapp_inventory WHERE set_num = '{set_number}')
+    invs = _fetch_inventories_from_sets(set_number, quantity)
 
-        UNION
+    parts = []
+    fig_parts = []
+    for inv_set, _quantity in invs:
+        parts.append((
+            inv_set._set.set_num, 
+            inv_set.inventoryparts_set.all(),
+            _quantity
+        ))
+        for inv_fig in inv_set.inventoryminifigs_set.all():
+            fig_parts.append((
+                inv_set._set.set_num, 
+                inv_fig.minifig.fig_num, 
+                inv_fig.inventory.inventoryparts_set.all(), 
+                _quantity * inv_fig.quantity
+            ))
 
-        SELECT legoapp_inventory.id AS id, legoapp_inventory.set_num, legoapp_inventorysets.quantity * {quantity} AS quantity
-        FROM legoapp_inventorysets, legoapp_inventory, check_set
-        WHERE legoapp_inventorysets.inventory_id = check_set.id
-            AND legoapp_inventory.set_num = legoapp_inventorysets.set_num
-    )
-    SELECT * FROM check_set;
-    """.format(quantity=1, set_number=set_number)
-    res = Inventory.objects.raw(query)
-    print(list(res))
+    def _format_elements(_list):
+        for _tuple in _list:
+            if len(_tuple) == 3:
+                set_num, inv_parts, qty = _tuple
+                fig_num = None
+            else:
+                set_num, fig_num, inv_parts, qty = _tuple
 
-    # with db as conn:
-    #     db_utils.execute_script('fetch_set_data.sql.template', conn, set_number=set_number, quantity=quantity)
+            for inv_part in inv_parts:
+                _query = inv_part.part.element_set.filter(color=inv_part.color)
+                if _query.count() == 0:
+                    yield {
+                        'set_num': set_num,
+                        'part_num': elem.part.part_num,
+                        'color_id': elem.color.id,
+                        'element_id': None
+                    }
+                else:
+                    for elem in _query.all():
+                        yield {
+                            'set_num': set_num,
+                            'part_num': elem.part.part_num,
+                            'color_id': elem.color.id,
+                            'element_id': elem.element_id
+                        }
 
-    #     _parts = pd.read_sql_query('SELECT * FROM set_parts', conn)
-    #     _minifigs_parts = pd.read_sql_query('SELECT * FROM set_minifigs_parts', conn)
-    #     _elements = pd.read_sql_query('SELECT * FROM set_elements', conn)
+    def _format_parts(_list):
+        for _tuple in _list:
+            if len(_tuple) == 3:
+                set_num, inv_parts, qty = _tuple
+                fig_num = None
+            else:
+                set_num, fig_num, inv_parts, qty = _tuple
 
-    # return _parts, _minifigs_parts, _elements
+            for inv_part in inv_parts:
+                item = {
+                    'set_num': set_num,
+                    'part_num': inv_part.part.part_num,
+                    'part_name': inv_part.part.name,
+                    'part_material': inv_part.part.part_material,
+                    'color_id': inv_part.color.id,
+                    'color_name': inv_part.color.name,
+                    'color_rgb': inv_part.color.rgb,
+                    'color_is_trans': inv_part.color.is_trans,
+                    'is_spare': inv_part.is_spare,
+                    'img_url': inv_part.img_url,
+                    'quantity': inv_part.quantity * qty 
+                }
+                if fig_num is not None:
+                    item['fig_num'] = fig_num
+
+                yield item
+
+    _parts = pd.DataFrame(_format_parts(parts))
+    _fig_parts = pd.DataFrame(_format_parts(fig_parts))
+    _elements = pd.DataFrame(_format_elements(parts + fig_parts))
+
+    return _parts, _fig_parts, _elements
 
 # def _find_first_key(possible_values: typing.Iterable[str], search_list: typing.Iterable[str]):
 #     for key in possible_values:
