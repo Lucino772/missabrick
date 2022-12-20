@@ -1,16 +1,21 @@
-import pandas as pd
-import typing
 import json
-from django.shortcuts import HttpResponse, render
-from django.http import HttpRequest
-from django.core.paginator import Paginator
-from django.core.files.temp import NamedTemporaryFile
-
 import os
+import tempfile
+import typing
 
-from legoapp.models import (Color, Element, Inventory, InventoryMinifigs,
-                            InventoryParts, InventorySets, Minifig, Part,
-                            PartsCategory, PartsRelationship, Set, Theme)
+import pandas as pd
+from django import forms
+from django.core.files.temp import NamedTemporaryFile
+from django.core.paginator import Paginator
+from django.http import HttpRequest, HttpResponseBadRequest
+from django.shortcuts import HttpResponse, render
+
+from legoapp.models import Inventory, Set
+
+
+# Forms
+class UploadReportForm(forms.Form):
+    file = forms.FileField()
 
 # DB
 def set_exists(set_number: str):
@@ -167,6 +172,20 @@ def send_temp_file(set_number: str, parts: pd.DataFrame, fig_parts: pd.DataFrame
     os.unlink(fp.name)
     return response
 
+def read_uploaded_set_excel_file(file):
+    dataframes = {}
+    with tempfile.NamedTemporaryFile() as fp:
+        for chunk in file.chunks():
+            fp.write(chunk)
+
+        dataframes = pd.read_excel(fp, sheet_name=["parts", "minifigs", "elements"])
+
+    parts_df = dataframes.get('parts', None)
+    minifigs_parts_df = dataframes.get('minifigs', None)
+    elements_df = dataframes.get('elements', None)
+
+    return parts_df, minifigs_parts_df, elements_df
+
 # Views
 def index(request: HttpRequest):
     page = request.GET.get('page', 1)
@@ -190,21 +209,28 @@ def download_set(request: HttpRequest, set_number: str):
     parts, minifigs_parts, elements = get_set_data(set_number)
     return send_temp_file(set_number, parts, minifigs_parts, elements)
 
-def report(request):
-    # set_report = None
-    # if request.method == 'POST':
-    #     file = request.files.get('file', None)
-    #     if file is None:
-    #         abort(403)
-        
-    #     parts_df, minifigs_parts_df, elements_df = read_uploaded_set_excel_file(file)
+def report(request: HttpRequest):
+    if request.method == 'POST':
+        form = UploadReportForm(request.POST, request.FILES)
+        if form.is_valid():
+            parts_df, minifigs_parts_df, elements_df = read_uploaded_set_excel_file(request.FILES.get('file'))
+            
+            # Missing data
+            if any(map(lambda v: v is None, [parts_df, minifigs_parts_df, elements_df])):
+                return HttpResponseBadRequest()
 
-    #     # Missing data
-    #     if any(map(lambda v: v is None, [parts_df, minifigs_parts_df, elements_df])):
-    #         abort(403)
-
-    #     # Generate report
-    #     set_report = gen_report(parts_df, minifigs_parts_df, elements_df)
-
-    # return render_template('report.html', report=set_report)
-    return HttpResponse("Report")
+            # Generate report
+            set_report = gen_report(parts_df, minifigs_parts_df, elements_df)
+            
+            return render(request, 'report.html', context={
+                'parts': set_report['parts'],
+                'fig_parts': set_report['fig_parts'],
+                'form': form
+            })
+    else:
+        form = UploadReportForm()
+        return render(request, 'report.html', context={
+            'parts': [],
+            'fig_parts': [],
+            'form': form
+        })
