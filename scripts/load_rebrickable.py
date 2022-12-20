@@ -110,8 +110,8 @@ def _import_part_relationships(filename: str):
         relationships = [
             PartsRelationship(
                 rel_type=row[0],
-                child_part=Part.objects.get(part_num=row[1]),
-                parent_part=Part.objects.get(part_num=row[2])
+                child_part=_get_default(Part, 'part_num', row[1]),
+                parent_part=_get_default(Part, 'part_num', row[2])
             )
             for row in reader
         ]
