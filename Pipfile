@@ -4,11 +4,14 @@ verify_ssl = true
 name = "pypi"
 
 [packages]
-flask = "*"
 pandas = "*"
 openpyxl = "*"
 requests = "*"
 python-dotenv = "*"
+django = "*"
+django-extensions = "*"
+django-compressor = "*"
+turbo-django = "*"
 
 [dev-packages]
 

@@ -1,8 +1,6 @@
 /** @type {import('tailwindcss').Config} */
 module.exports = {
-  content: [
-    './legoapp/templates/**/*.html'
-  ],
+  content: ["./app/**/*.html"],
   theme: {
     extend: {},
   },
