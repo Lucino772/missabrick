@@ -143,7 +143,7 @@ def gen_report(parts: pd.DataFrame, fig_parts: pd.DataFrame, elements: pd.DataFr
     }
 
 def search_sets(search: str, current_page: int, page_size: int):
-    sets_qs = Set.objects.filter(set_num__contains=search.strip())
+    sets_qs = Set.objects.filter(set_num__contains=search.strip()).order_by('year')
     paginator = Paginator(sets_qs, page_size)
     page = paginator.page(current_page)
 
