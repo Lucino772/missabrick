@@ -22,12 +22,11 @@
     {% include "turbo/head.html" %}
 </head>
 
-<body style="background-color: #F3F3F3;">
+<body>
     <nav class="navbar navbar-expand-lg bg-body-tertiary">
         <div class="container">
             <div class="navbar-nav">
                 <a href="/" class="nav-link" data-turbo-frame="content">
-                    <!-- Download SVG icon from http://tabler-icons.io/i/plus -->
                     <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-home" width="24"
                         height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none"
                         stroke-linecap="round" stroke-linejoin="round">
@@ -39,7 +38,6 @@
                     Dashboard
                 </a>
                 <a href="/explore" class="nav-link" data-turbo-frame="content">
-                    <!-- Download SVG icon from http://tabler-icons.io/i/plus -->
                     <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-search" width="24"
                         height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none"
                         stroke-linecap="round" stroke-linejoin="round">
@@ -50,7 +48,6 @@
                     Explore
                 </a>
                 <a href="/collections" class="nav-link" data-turbo-frame="content">
-                    <!-- Download SVG icon from http://tabler-icons.io/i/plus -->
                     <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-archive" width="24"
                         height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none"
                         stroke-linecap="round" stroke-linejoin="round">
@@ -61,6 +58,17 @@
                         <path d="M10 12l4 0"></path>
                     </svg>
                     Collections
+                </a>
+                <a href="/report" class="nav-link" data-turbo-frame="content">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-report-analytics" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                        <path stroke="none" d="M0 0h24v24H0z" fill="none"></path>
+                        <path d="M9 5h-2a2 2 0 0 0 -2 2v12a2 2 0 0 0 2 2h10a2 2 0 0 0 2 -2v-12a2 2 0 0 0 -2 -2h-2"></path>
+                        <path d="M9 3m0 2a2 2 0 0 1 2 -2h2a2 2 0 0 1 2 2v0a2 2 0 0 1 -2 2h-2a2 2 0 0 1 -2 -2z"></path>
+                        <path d="M9 17v-5"></path>
+                        <path d="M12 17v-1"></path>
+                        <path d="M15 17v-3"></path>
+                    </svg>
+                    Report
                 </a>
             </div>
         </div>
