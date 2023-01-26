@@ -189,18 +189,7 @@ def read_uploaded_set_excel_file(file):
 
 # Views
 def index(request: HttpRequest):
-    page = request.GET.get('page', 1)
-    search = request.GET.get('search', '')
-    sets, next_page, prev_page, last_page, count = search_sets(search, page, 20)
-
-    return render(request, 'index.html', context={
-        'sets': sets,
-        'current_search': search,
-        'current_page': page,
-        'prev_page': prev_page,
-        'next_page': next_page,
-        'last_page': last_page
-    })
+    return render(request, 'index.html', context={})
 
 def explore(request: HttpRequest):
     page = request.GET.get('page', 1)
