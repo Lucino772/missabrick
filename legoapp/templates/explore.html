@@ -22,7 +22,7 @@
                 </div>
                 <div class="col-auto">
                     <select name="page_size" class="form-select" onchange="this.form.requestSubmit();">
-                        <option value="10">10</option>
+                        <option value="10" selected>10</option>
                         <option value="25">25</option>
                         <option value="50">50</option>
                     </select>
@@ -78,25 +78,19 @@
                             <ul class="pagination justify-content-center">
                                 <li class="page-item">
                                     <a class="page-link {% if prev_page is None %}disabled{% endif %}"
-                                        href="/explore?search={{ current_search }}&page={{ prev_page }}"
+                                        href="/explore?search={{ current_search }}&page={{ prev_page }}&page_size={{ current_page_size }}"
                                         aria-label="Previous">
                                         <span aria-hidden="true">&laquo;</span>
                                     </a>
                                 </li>
-                                {% if prev_page is not None %}
-                                <li class="page-item"><a class="page-link"
-                                        href="/explore?search={{ current_search }}&page={{ prev_page }}">{{prev_page}}</a>
+                                {% for page in pages %}
+                                <li class="page-item {% if page == current_page %}active{% endif %}"><a class="page-link"
+                                    href="/explore?search={{ current_search }}&page={{ page }}&page_size={{ current_page_size }}">{{page}}</a>
                                 </li>
-                                {% endif %}
-                                <li class="page-item active"><a class="page-link" href="#">{{ current_page }}</a></li>
-                                {% if next_page is not None %}
-                                <li class="page-item"><a class="page-link"
-                                        href="/explore?search={{ current_search }}&page={{ next_page }}">{{next_page}}</a>
-                                </li>
-                                {% endif %}
+                                {% endfor %}
                                 <li class="page-item">
                                     <a class="page-link {% if next_page is None %}disabled{% endif %}"
-                                        href="/explore?search={{ current_search }}&page={{ next_page }}"
+                                        href="/explore?search={{ current_search }}&page={{ next_page }}&page_size={{ current_page_size }}"
                                         aria-label="Next">
                                         <span aria-hidden="true">&raquo;</span>
                                     </a>

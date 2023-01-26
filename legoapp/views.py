@@ -192,7 +192,7 @@ def index(request: HttpRequest):
     return render(request, 'index.html', context={})
 
 def explore(request: HttpRequest):
-    page = request.GET.get('page', 1)
+    page = int(request.GET.get('page', 1))
     search = request.GET.get('search', '')
     page_size = request.GET.get('page_size', 20)
     sets, next_page, prev_page, last_page, count = search_sets(search, page, page_size)
@@ -201,10 +201,15 @@ def explore(request: HttpRequest):
         'sets': sets,
         'sets_count': count,
         'current_search': search,
+        'current_page_size': page_size,
         'current_page': page,
         'prev_page': prev_page,
         'next_page': next_page,
-        'last_page': last_page
+        'last_page': last_page,
+        'pages': range(
+            max(page-2, 1),
+            min(page+3, last_page+1)
+        )
     })
 
 def download_set(request: HttpRequest, set_number: str):
