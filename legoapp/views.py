@@ -65,16 +65,16 @@ def get_set_data(set_number: str, quantity: int = 1):
                 if _query.count() == 0:
                     yield {
                         'set_num': set_num,
-                        'part_num': elem.part.part_num,
-                        'color_id': elem.color.id,
+                        'part_num': inv_part.part.part_num,
+                        'color_id': inv_part.color.id,
                         'element_id': None
                     }
                 else:
                     for elem in _query.all():
                         yield {
                             'set_num': set_num,
-                            'part_num': elem.part.part_num,
-                            'color_id': elem.color.id,
+                            'part_num': inv_part.part.part_num,
+                            'color_id': inv_part.color.id,
                             'element_id': elem.element_id
                         }
 
@@ -151,7 +151,8 @@ def search_sets(search: str, current_page: int, page_size: int):
         page.object_list, 
         page.next_page_number() if page.has_next() else None,
         page.previous_page_number() if page.has_previous() else None,
-        paginator.num_pages
+        paginator.num_pages,
+        paginator.count
     )
 
 # Utils
@@ -188,12 +189,17 @@ def read_uploaded_set_excel_file(file):
 
 # Views
 def index(request: HttpRequest):
+    return render(request, 'index.html', context={})
+
+def explore(request: HttpRequest):
     page = request.GET.get('page', 1)
     search = request.GET.get('search', '')
-    sets, next_page, prev_page, last_page = search_sets(search, page, 20)
+    page_size = request.GET.get('page_size', 20)
+    sets, next_page, prev_page, last_page, count = search_sets(search, page, page_size)
 
-    return render(request, 'index.html', context={
+    return render(request, 'explore.html', context={
         'sets': sets,
+        'sets_count': count,
         'current_search': search,
         'current_page': page,
         'prev_page': prev_page,
