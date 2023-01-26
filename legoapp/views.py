@@ -170,7 +170,9 @@ def send_temp_file(set_number: str, parts: pd.DataFrame, fig_parts: pd.DataFrame
         response['Content-Length'] = nbytes
         response['filename'] = f'{set_number}.xlsx'
 
-    os.unlink(fp.name)
+    if os.path.exists(fp.name):
+        os.unlink(fp.name)
+
     return response
 
 def read_uploaded_set_excel_file(file):
