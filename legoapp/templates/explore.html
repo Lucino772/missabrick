@@ -1,0 +1,131 @@
+{% extends 'layout/base.html' %}
+
+{% block content %}
+<div class="container">
+    <turbo-frame id="search-form">
+        <form action="/explore" method="get" data-turbo-frame="search-result">
+            <div class="row g-2">
+                <div class="col">
+                    <div class="input-icon">
+                        <input name="search" type="text" placeholder="Search" class="form-control">
+                        <span class="input-icon-addon">
+                            <!-- Download SVG icon from http://tabler-icons.io/i/search -->
+                            <svg xmlns="http://www.w3.org/2000/svg" class="icon" width="24" height="24" viewBox="0 0 24 24"
+                                stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round"
+                                stroke-linejoin="round">
+                                <path stroke="none" d="M0 0h24v24H0z" fill="none" />
+                                <circle cx="10" cy="10" r="7" />
+                                <line x1="21" y1="21" x2="15" y2="15" />
+                            </svg>
+                        </span>
+                    </div>
+                </div>
+                <div class="col-auto">
+                    <select name="page_size" class="form-select">
+                        <option value="10">10</option>
+                        <option value="25">25</option>
+                        <option value="50">50</option>
+                    </select>
+                </div>
+            </div>
+        </form>
+    </turbo-frame>
+    <turbo-frame id="search-result">
+        <p class="text-end my-3"><em>{{ sets_count }} results</em></p>
+        {% if sets_count > 0 %}
+        <table class="table table-responsive">
+            <thead>
+                <tr>
+                    <th>#</th>
+                    <th>Id</th>
+                    <th>Name</th>
+                    <th>Theme</th>
+                    <th>Year</th>
+                    <th># Parts</th>
+                    <th>Colors</th>
+                    <th class="w-1"></th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for aset in sets %}
+                <tr>
+                    <th>{{ forloop.counter }}</th>
+                    <td>{{ aset.set_num }}</td>
+                    <td>{{ aset.name }}</td>
+                    <td>{{ aset.theme.name }}</td>
+                    <td>{{ aset.year }}</td>
+                    <td>{{ aset.num_parts }}</td>
+                    <td>White</td>
+                    <td>
+                        <a href="{% url 'download' set_number=aset.set_num %}" target="_blank" data-turbo="false">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-download"
+                                width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"
+                                fill="none" stroke-linecap="round" stroke-linejoin="round">
+                                <path stroke="none" d="M0 0h24v24H0z" fill="none"></path>
+                                <path d="M4 17v2a2 2 0 0 0 2 2h12a2 2 0 0 0 2 -2v-2"></path>
+                                <path d="M7 11l5 5l5 -5"></path>
+                                <path d="M12 4l0 12"></path>
+                            </svg>
+                        </a>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+            <tfoot>
+                <tr>
+                    <td colspan="8">
+                        <nav>
+                            <ul class="pagination justify-content-center">
+                                <li class="page-item">
+                                    <a class="page-link {% if prev_page is None %}disabled{% endif %}"
+                                        href="/explore?search={{ current_search }}&page={{ prev_page }}"
+                                        aria-label="Previous">
+                                        <span aria-hidden="true">&laquo;</span>
+                                    </a>
+                                </li>
+                                {% if prev_page is not None %}
+                                <li class="page-item"><a class="page-link"
+                                        href="/explore?search={{ current_search }}&page={{ prev_page }}">{{prev_page}}</a>
+                                </li>
+                                {% endif %}
+                                <li class="page-item active"><a class="page-link" href="#">{{ current_page }}</a></li>
+                                {% if next_page is not None %}
+                                <li class="page-item"><a class="page-link"
+                                        href="/explore?search={{ current_search }}&page={{ next_page }}">{{next_page}}</a>
+                                </li>
+                                {% endif %}
+                                <li class="page-item">
+                                    <a class="page-link {% if next_page is None %}disabled{% endif %}"
+                                        href="/explore?search={{ current_search }}&page={{ next_page }}"
+                                        aria-label="Next">
+                                        <span aria-hidden="true">&raquo;</span>
+                                    </a>
+                                </li>
+                            </ul>
+                        </nav>
+                    </td>
+                </tr>
+            </tfoot>
+        </table>
+        {% else %}
+        <div class="empty">
+            <div class="empty-icon">
+                <!-- Download SVG icon from http://tabler-icons.io/i/mood-sad -->
+                <svg xmlns="http://www.w3.org/2000/svg" class="icon" width="24" height="24" viewBox="0 0 24 24"
+                    stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                    <path stroke="none" d="M0 0h24v24H0z" fill="none" />
+                    <circle cx="12" cy="12" r="9" />
+                    <line x1="9" y1="10" x2="9.01" y2="10" />
+                    <line x1="15" y1="10" x2="15.01" y2="10" />
+                    <path d="M9.5 15.25a3.5 3.5 0 0 1 5 0" />
+                </svg>
+            </div>
+            <p class="empty-title">No results found</p>
+            <p class="empty-subtitle text-muted">
+                Try adjusting your search or filter to find what you're looking for.
+            </p>
+        </div>
+        {% endif %}
+    </turbo-frame>
+</div>
+{% endblock %}
