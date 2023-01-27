@@ -12,6 +12,7 @@ django = "*"
 django-extensions = "*"
 django-compressor = "*"
 turbo-django = "*"
+celery = {extras = ["redis"], version = "*"}
 
 [dev-packages]
 
