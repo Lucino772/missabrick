@@ -18,6 +18,7 @@ RUN pip3 install -r requirements.txt --no-cache-dir
 
 # Copy Django application
 COPY . /opt/app/
+RUN chmod +x ./start.sh
 
 # Collect static
 RUN python manage.py compress --force

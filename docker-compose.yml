@@ -6,10 +6,12 @@ services:
       - "8080:8080"
     environment:
       - MISSABRICK_CELERY_BROKER_URL=redis://missabrick-redis:6379/0
+      - DEBUG=True
   missabrick-worker:
     build: .
     environment:
       - MISSABRICK_CELERY_WORKER=true
       - MISSABRICK_CELERY_BROKER_URL=redis://missabrick-redis:6379/0
+      - DEBUG=True
   missabrick-redis:
     image: "redis:alpine"
