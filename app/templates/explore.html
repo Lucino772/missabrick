@@ -31,8 +31,8 @@
         </form>
     </turbo-frame>
     <turbo-frame id="search-result">
-        <p class="text-end my-3"><em>{{ sets_count }} results</em></p>
-        {% if sets_count > 0 %}
+        <p class="text-end my-3"><em>{{ pagination.total }} results</em></p>
+        {% if pagination.total > 0 %}
         <table class="table table-responsive">
             <thead>
                 <tr>
@@ -47,9 +47,9 @@
                 </tr>
             </thead>
             <tbody>
-                {% for aset in sets %}
+                {% for aset in pagination %}
                 <tr>
-                    <th>{{ forloop.counter }}</th>
+                    <th>{{ loop.index }}</th>
                     <td>{{ aset.set_num }}</td>
                     <td>{{ aset.name }}</td>
                     <td>{{ aset.theme.name }}</td>
@@ -77,20 +77,26 @@
                         <nav>
                             <ul class="pagination justify-content-center">
                                 <li class="page-item">
-                                    <a class="page-link {% if prev_page is None %}disabled{% endif %}"
-                                        href="/explore?search={{ current_search }}&page={{ prev_page }}&page_size={{ current_page_size }}"
+                                    <a class="page-link {% if pagination.has_prev %}disabled{% endif %}"
+                                        href="{{ url_for('explore', search=search, page=pagination.prev_num, page_size=pagination.per_page) }}"
                                         aria-label="Previous">
                                         <span aria-hidden="true">&laquo;</span>
                                     </a>
                                 </li>
-                                {% for page in pages %}
-                                <li class="page-item {% if page == current_page %}active{% endif %}"><a class="page-link"
-                                    href="/explore?search={{ current_search }}&page={{ page }}&page_size={{ current_page_size }}">{{page}}</a>
-                                </li>
+                                {% for page in pagination.iter_pages() %}
+                                    {% if page %}
+                                        {% if page != pagination.page %}
+                                            <li class="page-item"><a class="page-link" href="{{ url_for('explore', search=search, page=page, page_size=pagination.per_page) }}">{{page}}</a></li>
+                                        {% else %}
+                                            <li class="page-item active"><a class="page-link" href="{{ url_for('explore', search=search, page=page, page_size=pagination.per_page) }}">{{page}}</a></li>
+                                        {% endif %}
+                                    {% else %}
+                                        <span class=ellipsis>…</span>
+                                    {% endif %}
                                 {% endfor %}
                                 <li class="page-item">
-                                    <a class="page-link {% if next_page is None %}disabled{% endif %}"
-                                        href="/explore?search={{ current_search }}&page={{ next_page }}&page_size={{ current_page_size }}"
+                                    <a class="page-link {% if pagination.has_next %}disabled{% endif %}"
+                                        href="{{ url_for('explore', search=search, page=pagination.next_num, page_size=pagination.per_page) }}"
                                         aria-label="Next">
                                         <span aria-hidden="true">&raquo;</span>
                                     </a>

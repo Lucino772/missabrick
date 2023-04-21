@@ -48,8 +48,8 @@ class PartsRelationship(db.Model):
     child_part_id: Mapped[str] = mapped_column(sa.ForeignKey("part.part_num"))
     parent_part_id: Mapped[str] = mapped_column(sa.ForeignKey("part.part_num"))
 
-    child_part: Mapped[Part] = relationship()
-    parent_part: Mapped[Part] = relationship()
+    child_part: Mapped[Part] = relationship(foreign_keys=[child_part_id])
+    parent_part: Mapped[Part] = relationship(foreign_keys=[parent_part_id])
 
 class Element(db.Model):
     __tablename__ = "element"
@@ -92,6 +92,9 @@ class Inventory(db.Model):
 
     _set: Mapped[Set] = relationship()
     minifig: Mapped[Minifig] = relationship()
+    inventory_minifigs: Mapped[t.List["InventoryMinifigs"]] = relationship()
+    inventory_parts: Mapped[t.List["InventoryParts"]] = relationship()
+    inventory_sets: Mapped[t.List["InventorySets"]] = relationship()
 
 class InventoryMinifigs(db.Model):
     __tablename__ = "inventory_minifigs"
