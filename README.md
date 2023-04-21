@@ -13,3 +13,8 @@ An then run the app:
 ```shell
 docker run -d -p 8080:8080 missabrick:latest
 ```
+
+You can also juste pull the image from GitHub Container registry:
+```shell
+docker pull ghcr.io/lucino772/missabrick:main
+```
