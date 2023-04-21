@@ -1,6 +1,6 @@
 from flask import Flask
 
-from app.database import db
+from app.extensions import db, compress
 from app.catalog import blueprint as catalog_bp
 
 import secrets
@@ -12,6 +12,9 @@ def create_app():
     # SQLAlchemy
     app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:///db.sqlite3"
     db.init_app(app)
+
+    # flask-compress
+    compress.init_app(app)
 
     # Blueprints
     app.register_blueprint(catalog_bp)

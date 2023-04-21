@@ -13,7 +13,7 @@ from app.catalog import blueprint
 from app.catalog.models import (Color, Element, Inventory, InventoryMinifigs,
                                 InventoryParts, InventorySets, Minifig, Part,
                                 PartsCategory, PartsRelationship, Set, Theme)
-from app.database import db
+from app.extensions import db
 
 
 @blueprint.cli.command("create-db")

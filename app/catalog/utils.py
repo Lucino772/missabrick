@@ -1,5 +1,5 @@
 import typing as t
-from app.database import db
+from app.extensions import db
 from app.catalog.models import Set, Inventory
 from flask import current_app
 

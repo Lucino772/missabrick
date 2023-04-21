@@ -16,6 +16,7 @@ celery = {extras = ["redis"], version = "*"}
 flask = "*"
 flask-sqlalchemy = "*"
 flask-wtf = "*"
+flask-compress = "*"
 
 [dev-packages]
 
