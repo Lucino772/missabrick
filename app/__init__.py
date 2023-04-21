@@ -1,9 +1,10 @@
+import secrets
+
 from flask import Flask
 
-from app.extensions import db, compress
 from app.catalog import blueprint as catalog_bp
+from app.extensions import compress, db
 
-import secrets
 
 def create_app():
     app = Flask(__name__)

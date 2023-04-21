@@ -11,9 +11,12 @@ class Theme(db.Model):
 
     id: Mapped[int] = mapped_column(primary_key=True)
     name: Mapped[str] = mapped_column(sa.String(255))
-    parent_id: Mapped[int] = mapped_column(sa.ForeignKey("theme.id"), nullable=True)
+    parent_id: Mapped[int] = mapped_column(
+        sa.ForeignKey("theme.id"), nullable=True
+    )
 
     parent: Mapped["Theme"] = relationship()
+
 
 class Color(db.Model):
     __tablename__ = "color"
@@ -23,11 +26,13 @@ class Color(db.Model):
     rgb: Mapped[str] = mapped_column(sa.String(20))
     is_trans: Mapped[bool] = mapped_column()
 
+
 class PartsCategory(db.Model):
     __tablename__ = "parts_category"
 
     id: Mapped[int] = mapped_column(primary_key=True)
     name: Mapped[str] = mapped_column(sa.String(255))
+
 
 class Part(db.Model):
     __tablename__ = "part"
@@ -35,10 +40,13 @@ class Part(db.Model):
     part_num: Mapped[str] = mapped_column(sa.String(20), primary_key=True)
     name: Mapped[str] = mapped_column(sa.String(255))
     part_material: Mapped[str] = mapped_column(sa.String(255))
-    part_category_id: Mapped[int] = mapped_column(sa.ForeignKey("parts_category.id"))
+    part_category_id: Mapped[int] = mapped_column(
+        sa.ForeignKey("parts_category.id")
+    )
 
     part_category: Mapped[PartsCategory] = relationship()
     elements: Mapped[t.List["Element"]] = relationship(lazy="dynamic")
+
 
 class PartsRelationship(db.Model):
     __tablename__ = "parts_relationship"
@@ -51,6 +59,7 @@ class PartsRelationship(db.Model):
     child_part: Mapped[Part] = relationship(foreign_keys=[child_part_id])
     parent_part: Mapped[Part] = relationship(foreign_keys=[parent_part_id])
 
+
 class Element(db.Model):
     __tablename__ = "element"
 
@@ -61,6 +70,7 @@ class Element(db.Model):
     color: Mapped[Color] = relationship()
     part: Mapped[Part] = relationship(back_populates="elements")
 
+
 class Minifig(db.Model):
     __tablename__ = "minifig"
 
@@ -70,6 +80,7 @@ class Minifig(db.Model):
     img_url: Mapped[str] = mapped_column(sa.Text)
 
     inventories: Mapped[t.List["Inventory"]] = relationship(lazy="dynamic")
+
 
 class Set(db.Model):
     __tablename__ = "set"
@@ -83,20 +94,26 @@ class Set(db.Model):
 
     theme: Mapped[Theme] = relationship()
 
+
 class Inventory(db.Model):
     __tablename__ = "inventory"
 
     id: Mapped[int] = mapped_column(primary_key=True)
     version: Mapped[int] = mapped_column()
     is_minifig: Mapped[bool] = mapped_column()
-    set_id: Mapped[str] = mapped_column(sa.ForeignKey("set.set_num"), nullable=True)
-    minifig_id: Mapped[str] = mapped_column(sa.ForeignKey("minifig.fig_num"), nullable=True)
+    set_id: Mapped[str] = mapped_column(
+        sa.ForeignKey("set.set_num"), nullable=True
+    )
+    minifig_id: Mapped[str] = mapped_column(
+        sa.ForeignKey("minifig.fig_num"), nullable=True
+    )
 
     _set: Mapped[Set] = relationship()
     minifig: Mapped[Minifig] = relationship(back_populates="inventories")
     inventory_minifigs: Mapped[t.List["InventoryMinifigs"]] = relationship()
     inventory_parts: Mapped[t.List["InventoryParts"]] = relationship()
     inventory_sets: Mapped[t.List["InventorySets"]] = relationship()
+
 
 class InventoryMinifigs(db.Model):
     __tablename__ = "inventory_minifigs"
@@ -106,8 +123,11 @@ class InventoryMinifigs(db.Model):
     inventory_id: Mapped[int] = mapped_column(sa.ForeignKey("inventory.id"))
     minifig_id: Mapped[str] = mapped_column(sa.ForeignKey("minifig.fig_num"))
 
-    inventory: Mapped[Inventory] = relationship(back_populates="inventory_minifigs")
+    inventory: Mapped[Inventory] = relationship(
+        back_populates="inventory_minifigs"
+    )
     minifig: Mapped[Minifig] = relationship()
+
 
 class InventoryParts(db.Model):
     __tablename__ = "inventory_parts"
@@ -117,12 +137,17 @@ class InventoryParts(db.Model):
     is_spare: Mapped[bool] = mapped_column()
     img_url: Mapped[str] = mapped_column(sa.Text)
     inventory_id: Mapped[int] = mapped_column(sa.ForeignKey("inventory.id"))
-    part_id: Mapped[str] = mapped_column(sa.String, sa.ForeignKey("part.part_num"))
+    part_id: Mapped[str] = mapped_column(
+        sa.String, sa.ForeignKey("part.part_num")
+    )
     color_id: Mapped[int] = mapped_column(sa.ForeignKey("color.id"))
 
-    inventory: Mapped[Inventory] = relationship(back_populates="inventory_parts")
+    inventory: Mapped[Inventory] = relationship(
+        back_populates="inventory_parts"
+    )
     part: Mapped[Part] = relationship()
     color: Mapped[Color] = relationship()
+
 
 class InventorySets(db.Model):
     __tablename__ = "inventory_sets"
@@ -130,7 +155,11 @@ class InventorySets(db.Model):
     id: Mapped[int] = mapped_column(primary_key=True)
     quantity: Mapped[int] = mapped_column()
     inventory_id: Mapped[int] = mapped_column(sa.ForeignKey("inventory.id"))
-    set_id: Mapped[str] = mapped_column(sa.String, sa.ForeignKey("set.set_num"))
+    set_id: Mapped[str] = mapped_column(
+        sa.String, sa.ForeignKey("set.set_num")
+    )
 
-    inventory: Mapped[Inventory] = relationship(back_populates="inventory_sets")
+    inventory: Mapped[Inventory] = relationship(
+        back_populates="inventory_sets"
+    )
     _set: Mapped[Set] = relationship()
