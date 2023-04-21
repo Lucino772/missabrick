@@ -14,6 +14,7 @@ django-compressor = "*"
 turbo-django = "*"
 celery = {extras = ["redis"], version = "*"}
 flask = "*"
+flask-sqlalchemy = "*"
 
 [dev-packages]
 
