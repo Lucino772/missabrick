@@ -16,12 +16,10 @@ RUN pip3 install gunicorn
 COPY requirements.txt /opt/app/
 RUN pip3 install -r requirements.txt --no-cache-dir
 
-# Copy Django application
+# Copy Flask application
 COPY . /opt/app/
-RUN chmod +x ./start.sh
 
-# Collect static
-RUN python manage.py compress --force
-RUN python manage.py collectstatic --noinput
+# Load data
+RUN flask catalog load
 
 CMD [ "/opt/app/start.sh" ]

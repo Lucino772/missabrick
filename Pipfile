@@ -8,13 +8,14 @@ pandas = "*"
 openpyxl = "*"
 requests = "*"
 python-dotenv = "*"
-django = "*"
-django-extensions = "*"
-django-compressor = "*"
-turbo-django = "*"
-celery = {extras = ["redis"], version = "*"}
+flask = "*"
+flask-sqlalchemy = "*"
+flask-wtf = "*"
+flask-compress = "*"
 
 [dev-packages]
+nox = "*"
+pre-commit = "*"
 
 [requires]
 python_version = "3.8"
