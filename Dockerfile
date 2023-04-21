@@ -1,4 +1,4 @@
-FROM python:3.8
+FROM python:3.8-slim
 EXPOSE 8080
 
 # Install nginx
@@ -15,7 +15,6 @@ RUN pip3 install gunicorn
 # Install requirements
 COPY requirements.txt /opt/app/
 RUN pip3 install -r requirements.txt --no-cache-dir
-
 # Copy Flask application
 COPY . /opt/app/
 
