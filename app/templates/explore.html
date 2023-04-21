@@ -57,7 +57,7 @@
                     <td>{{ aset.num_parts }}</td>
                     <td>White</td>
                     <td>
-                        <a href="{{url_for('download', set_number=aset.set_num)}}" target="_blank" data-turbo="false">
+                        <a href="{{url_for('catalog.download', set_number=aset.set_num)}}" target="_blank" data-turbo="false">
                             <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-download"
                                 width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"
                                 fill="none" stroke-linecap="round" stroke-linejoin="round">
@@ -77,26 +77,26 @@
                         <nav>
                             <ul class="pagination justify-content-center">
                                 <li class="page-item">
-                                    <a class="page-link {% if pagination.has_prev %}disabled{% endif %}"
-                                        href="{{ url_for('explore', search=search, page=pagination.prev_num, page_size=pagination.per_page) }}"
+                                    <a class="page-link {% if pagination.has_prev == False %}disabled{% endif %}"
+                                        href="{{ url_for('catalog.explore', search=search, page=pagination.prev_num, page_size=pagination.per_page) }}"
                                         aria-label="Previous">
                                         <span aria-hidden="true">&laquo;</span>
                                     </a>
                                 </li>
-                                {% for page in pagination.iter_pages() %}
+                                {% for page in pagination.iter_pages(left_edge=2, left_current=1, right_edge=2, right_current=1) %}
                                     {% if page %}
                                         {% if page != pagination.page %}
-                                            <li class="page-item"><a class="page-link" href="{{ url_for('explore', search=search, page=page, page_size=pagination.per_page) }}">{{page}}</a></li>
+                                            <li class="page-item"><a class="page-link" href="{{ url_for('catalog.explore', search=search, page=page, page_size=pagination.per_page) }}">{{page}}</a></li>
                                         {% else %}
-                                            <li class="page-item active"><a class="page-link" href="{{ url_for('explore', search=search, page=page, page_size=pagination.per_page) }}">{{page}}</a></li>
+                                            <li class="page-item active"><a class="page-link" href="{{ url_for('catalog.explore', search=search, page=page, page_size=pagination.per_page) }}">{{page}}</a></li>
                                         {% endif %}
                                     {% else %}
                                         <span class=ellipsis>…</span>
                                     {% endif %}
                                 {% endfor %}
                                 <li class="page-item">
-                                    <a class="page-link {% if pagination.has_next %}disabled{% endif %}"
-                                        href="{{ url_for('explore', search=search, page=pagination.next_num, page_size=pagination.per_page) }}"
+                                    <a class="page-link {% if pagination.has_next == False %}disabled{% endif %}"
+                                        href="{{ url_for('catalog.explore', search=search, page=pagination.next_num, page_size=pagination.per_page) }}"
                                         aria-label="Next">
                                         <span aria-hidden="true">&raquo;</span>
                                     </a>

@@ -11,10 +11,9 @@ class Theme(db.Model):
 
     id: Mapped[int] = mapped_column(primary_key=True)
     name: Mapped[str] = mapped_column(sa.String(255))
-    parent_id: Mapped[int] = mapped_column(sa.ForeignKey("theme.id"))
+    parent_id: Mapped[int] = mapped_column(sa.ForeignKey("theme.id"), nullable=True)
 
     parent: Mapped["Theme"] = relationship()
-    childs: Mapped[t.List["Theme"]] = relationship()
 
 class Color(db.Model):
     __tablename__ = "color"
@@ -87,8 +86,8 @@ class Inventory(db.Model):
     id: Mapped[int] = mapped_column(primary_key=True)
     version: Mapped[int] = mapped_column()
     is_minifig: Mapped[bool] = mapped_column()
-    set_id: Mapped[str] = mapped_column(sa.ForeignKey("set.set_num"))
-    minifig_id: Mapped[str] = mapped_column(sa.ForeignKey("minifig.fig_num"))
+    set_id: Mapped[str] = mapped_column(sa.ForeignKey("set.set_num"), nullable=True)
+    minifig_id: Mapped[str] = mapped_column(sa.ForeignKey("minifig.fig_num"), nullable=True)
 
     _set: Mapped[Set] = relationship()
     minifig: Mapped[Minifig] = relationship()

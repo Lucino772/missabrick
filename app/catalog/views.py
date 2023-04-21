@@ -16,6 +16,10 @@ def explore():
     pagination = search_sets(search, page, page_size)
     return render_template("explore.html", search=search, pagination=pagination)
 
+@blueprint.route("/download/<set_number>")
+def download(set_number: int):
+    pass
+
 @blueprint.route("/report")
 def report():
     return render_template("report.html")
