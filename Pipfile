@@ -15,6 +15,7 @@ turbo-django = "*"
 celery = {extras = ["redis"], version = "*"}
 flask = "*"
 flask-sqlalchemy = "*"
+flask-wtf = "*"
 
 [dev-packages]
 

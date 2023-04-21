@@ -1,10 +1,17 @@
 import typing as t
 from app.database import db
 from app.catalog.models import Set, Inventory
+from flask import current_app
 
 import sqlalchemy as sa
 import pandas as pd
 import json
+
+from werkzeug.datastructures import FileStorage
+
+
+import os
+from tempfile import NamedTemporaryFile, mkstemp
 
 # DB
 def set_exists(set_number: str):
@@ -42,7 +49,7 @@ def get_set_data(set_number: str, quantity: int = 1):
             fig_parts.append((
                 inv_set._set.set_num, 
                 inv_fig.minifig.fig_num,
-                inv_set.inventory_parts,
+                db.session.execute(inv_fig.minifig.inventories.order_by('version')).scalar_one().inventory_parts,
                 _quantity * inv_fig.quantity
             ))
 
@@ -55,8 +62,8 @@ def get_set_data(set_number: str, quantity: int = 1):
                 set_num, fig_num, inv_parts, qty = _tuple
 
             for inv_part in inv_parts:
-                _query = inv_part.part.element_set.filter(color=inv_part.color)
-                if _query.count() == 0:
+                results = list(db.session.execute(inv_part.part.elements.filter_by(color=inv_part.color)).scalars())
+                if len(results) == 0:
                     yield {
                         'set_num': set_num,
                         'part_num': inv_part.part.part_num,
@@ -64,7 +71,7 @@ def get_set_data(set_number: str, quantity: int = 1):
                         'element_id': None
                     }
                 else:
-                    for elem in _query.all():
+                    for elem in results:
                         yield {
                             'set_num': set_num,
                             'part_num': inv_part.part.part_num,
@@ -144,3 +151,43 @@ def search_sets(search: str, current_page: int, page_size: int):
     )
 
     return page
+
+# Web
+def stream_file_and_remove(filename: str, fd: int = None):
+    open_path = filename if fd is None else fd
+
+    with open(open_path, 'rb', closefd=True) as fp:
+        yield from fp
+
+    os.remove(filename)
+
+def send_temp_file(set_number: str, parts: pd.DataFrame, fig_parts: pd.DataFrame, elements: pd.DataFrame):
+    fd, filename = mkstemp()
+    with pd.ExcelWriter(filename, engine="openpyxl") as writer:
+        parts.to_excel(writer, sheet_name='parts', index=False)
+        fig_parts.to_excel(writer, sheet_name='minifigs', index=False)
+        elements.to_excel(writer, sheet_name='elements', index=False)
+
+    nbytes = os.stat(filename).st_size
+    return current_app.response_class(
+        stream_file_and_remove(filename, fd),
+        headers={
+            'Content-Disposition': f'inline; filename={set_number}.xlsx', 
+            'Content-Length': nbytes,
+            'Content-Type': 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+            'filename': f'{set_number}.xlsx'
+        }
+    )
+
+def read_uploaded_set_excel_file(file: FileStorage):
+    dataframes = {}
+    with NamedTemporaryFile() as fp:
+        file.save(fp)
+
+        dataframes = pd.read_excel(fp, sheet_name=["parts", "minifigs", "elements"])
+
+    parts_df = dataframes.get('parts', None)
+    minifigs_parts_df = dataframes.get('minifigs', None)
+    elements_df = dataframes.get('elements', None)
+
+    return parts_df, minifigs_parts_df, elements_df

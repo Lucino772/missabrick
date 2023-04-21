@@ -5,8 +5,8 @@
     <div class="card">
         <div class="mb-3">
             <form action="/report" method="post" data-turbo-frame="upload-result" enctype="multipart/form-data">
-                {% csrf_token %}
-                <input class="form-control" type="file" name="file" onchange="this.form.requestSubmit();">
+                {{ form.hidden_tag() }}
+                {{ form.file(class="form-control", onchange="this.form.requestSubmit()") }}
             </form>
             <div class="card-header">
                 <ul class="nav nav-tabs card-header-tabs" data-bs-toggle="tabs">
@@ -42,7 +42,7 @@
                                 <tbody>
                                     {% for part in parts %}
                                     <tr>
-                                        <th class="text-center">{{ forloop.counter }}</th>
+                                        <th class="text-center">{{ loop.index }}</th>
                                         <td class="text-center">{{ part.part_num }}</td>
                                         <td>{{ part.part_name }}</td>
                                         <td class="d-flex justify-content-center gap-3 align-items-center">
@@ -84,7 +84,7 @@
                                 <tbody>
                                     {% for part in fig_parts %}
                                     <tr>
-                                        <th class="text-center">{{ forloop.counter }}</th>
+                                        <th class="text-center">{{ loop.index }}</th>
                                         <td class="text-center">{{ part.part_num }}</td>
                                         <td class="text-center">{{ part.fig_num }}</td>
                                         <td>{{ part.part_name }}</td>
