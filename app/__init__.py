@@ -1,20 +1,16 @@
-import secrets
-
 from flask import Flask
 
 from app.catalog import blueprint as catalog_bp
 from app.extensions import compress, db
+from app.settings import Config
 
 
 def create_app():
     app = Flask(__name__)
-    app.config["SECRET_KEY"] = secrets.token_hex()
+    app.config.from_object(Config())
 
-    # SQLAlchemy
-    app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:///db.sqlite3"
+    # Extensions
     db.init_app(app)
-
-    # flask-compress
     compress.init_app(app)
 
     # Blueprints

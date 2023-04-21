@@ -3,7 +3,7 @@ import typing as t
 import sqlalchemy as sa
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
-from app import db
+from app.extensions import db
 
 
 class Theme(db.Model):
