@@ -1,27 +1,39 @@
-from flask import redirect, render_template
+from flask import redirect, render_template, url_for
 
-from app.extensions import db
 from app.login import blueprint
 from app.login.forms import SignInForm, SignUpForm
 from app.login.utils import (
     ConfirmPasswordDoesNotMatch,
     EmailAlreadyTaken,
+    LoginError,
     UsernameAlreadyTaken,
     check_confirm_password,
     check_email,
+    check_login,
     check_username,
     create_user,
-    get_user,
 )
 
 
 @blueprint.route("/signin", methods=("POST", "GET"))
 def signin():
     form = SignInForm()
-    if form.validate_on_submit():
-        print(form.data)
+    if not form.is_submitted():
+        return render_template("signin.html", form=form, error=None)
+
+    if form.validate():
+        error = None
+        try:
+            check_login(form.email.data, form.password.data)
+        except LoginError:
+            error = "The username or password is incorrect"
+
+        if error is not None:
+            return render_template("signin.html", form=form, error=error), 422
+        else:
+            return redirect(url_for("catalog.index"))
     else:
-        return render_template("signin.html", form=form)
+        return render_template("signin.html", form=form, error=None), 422
 
 
 @blueprint.route("/signup", methods=("POST", "GET"))
@@ -49,6 +61,6 @@ def signup():
         if error is not None:
             return render_template("signup.html", form=form, error=error), 422
         else:
-            return redirect("catalog.index")
+            return redirect(url_for("catalog.index"))
     else:
         return render_template("signup.html", form=form, error=None), 422

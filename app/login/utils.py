@@ -1,4 +1,5 @@
 import sqlalchemy as sa
+from sqlalchemy.exc import NoResultFound
 
 from app.extensions import db
 from app.login.models import User
@@ -16,8 +17,19 @@ class ConfirmPasswordDoesNotMatch(Exception):
     pass
 
 
-def get_user():
+class LoginError(Exception):
     pass
+
+
+def check_login(email: str, password: str):
+    try:
+        user = db.session.execute(
+            sa.select(User).filter(User.email == email)
+        ).scalar_one()
+        if user.password != password:
+            raise LoginError()
+    except NoResultFound:
+        raise LoginError()
 
 
 def create_user(username: str, email: str, password: str):
@@ -27,21 +39,27 @@ def create_user(username: str, email: str, password: str):
 
 
 def check_username(name: str):
-    user = db.session.execute(
-        sa.select(User).filter(User.username == name)
-    ).scalar_one()
+    try:
+        user = db.session.execute(
+            sa.select(User).filter(User.username == name)
+        ).scalar_one()
 
-    if user is not None:
-        raise UsernameAlreadyTaken()
+        if user is not None:
+            raise UsernameAlreadyTaken()
+    except NoResultFound:
+        pass
 
 
 def check_email(email: str):
-    user = db.session.execute(
-        sa.select(User).filter(User.email == email)
-    ).scalar_one()
+    try:
+        user = db.session.execute(
+            sa.select(User).filter(User.email == email)
+        ).scalar_one()
 
-    if user is not None:
-        raise EmailAlreadyTaken()
+        if user is not None:
+            raise EmailAlreadyTaken()
+    except NoResultFound:
+        pass
 
 
 def check_confirm_password(password: str, confirm: str):

@@ -16,5 +16,5 @@ class User(db.Model):
         sa_utils.EmailType(), unique=True, nullable=False
     )
     password: Mapped[str] = mapped_column(
-        sa_utils.PasswordType, nullable=False
+        sa_utils.PasswordType(schemes=["pbkdf2_sha512"]), nullable=False
     )
