@@ -1,4 +1,4 @@
-from flask import redirect, render_template, url_for
+from flask import redirect, render_template, session, url_for
 
 from app.login import blueprint
 from app.login.forms import SignInForm, SignUpForm
@@ -31,6 +31,7 @@ def signin():
         if error is not None:
             return render_template("signin.html", form=form, error=error), 422
         else:
+            session["authenticated"] = True
             return redirect(url_for("catalog.index"))
     else:
         return render_template("signin.html", form=form, error=None), 422
@@ -61,6 +62,13 @@ def signup():
         if error is not None:
             return render_template("signup.html", form=form, error=error), 422
         else:
+            session["authenticated"] = True
             return redirect(url_for("catalog.index"))
     else:
         return render_template("signup.html", form=form, error=None), 422
+
+
+@blueprint.route("/signout", methods=("GET"))
+def signout():
+    if session.get("authenticated", False) is True:
+        session["authenticated"] = False
