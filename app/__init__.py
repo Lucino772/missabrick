@@ -1,7 +1,7 @@
 from flask import Flask
 
 from app.catalog import blueprint as catalog_bp
-from app.extensions import compress, db, migrate
+from app.extensions import compress, db, migrate, session
 from app.login import blueprint as login_bp
 from app.settings import Config
 
@@ -14,6 +14,7 @@ def create_app():
     db.init_app(app)
     compress.init_app(app)
     migrate.init_app(app, db)
+    session.init_app(app)
 
     # Blueprints
     app.register_blueprint(login_bp)

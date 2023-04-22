@@ -15,6 +15,7 @@ flask-compress = "*"
 sqlalchemy-utils = "*"
 passlib = "*"
 flask-migrate = "*"
+flask-session = "*"
 
 [dev-packages]
 nox = "*"
