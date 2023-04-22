@@ -68,7 +68,7 @@ def signup():
         return render_template("signup.html", form=form, error=None), 422
 
 
-@blueprint.route("/signout", methods=("GET"))
+@blueprint.route("/signout", methods=["GET"])
 def signout():
     if session.get("authenticated", False) is True:
         session["authenticated"] = False
