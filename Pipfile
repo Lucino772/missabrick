@@ -16,6 +16,8 @@ sqlalchemy-utils = "*"
 passlib = "*"
 flask-migrate = "*"
 flask-session = "*"
+itsdangerous = "*"
+sendgrid = "*"
 
 [dev-packages]
 nox = "*"

@@ -1,3 +1,5 @@
+import datetime as dt
+
 import sqlalchemy as sa
 import sqlalchemy_utils as sa_utils
 from sqlalchemy.orm import Mapped, mapped_column
@@ -17,4 +19,8 @@ class User(db.Model):
     )
     password: Mapped[str] = mapped_column(
         sa_utils.PasswordType(schemes=["pbkdf2_sha512"]), nullable=False
+    )
+    email_verified: Mapped[bool] = mapped_column(nullable=False, default=False)
+    email_verified_on: Mapped[dt.datetime] = mapped_column(
+        sa.DateTime(), nullable=True
     )
