@@ -7,6 +7,7 @@ import tempfile
 from typing import Any, Callable, Generator, Iterator, List, Type, TypeVar
 
 import requests
+import sqlalchemy as sa
 from flask.cli import with_appcontext
 
 from app.catalog import blueprint
@@ -25,12 +26,6 @@ from app.catalog.models import (
     Theme,
 )
 from app.extensions import db
-
-
-@blueprint.cli.command("create-db")
-@with_appcontext
-def createdb():
-    db.create_all()
 
 
 def _donwload_gzip_file(url: str, dest: str):
@@ -65,6 +60,7 @@ def _get_importer(
     ] = None,
 ):
     def _importer(filename: str):
+        db.session.execute(sa.delete(_cls))
         with _read_csv(filename) as reader:
             _rows = map(process_row, reader)
             if callable(after_process):
@@ -232,9 +228,6 @@ _DATA_URLS = [
 @blueprint.cli.command("load")
 @with_appcontext
 def load_data():
-    db.drop_all()
-    db.create_all()
-
     directory = ""
     try:
         directory = tempfile.mkdtemp()
