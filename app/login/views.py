@@ -72,3 +72,5 @@ def signup():
 def signout():
     if session.get("authenticated", False) is True:
         session["authenticated"] = False
+
+    return redirect(url_for("catalog.index"))

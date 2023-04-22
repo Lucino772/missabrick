@@ -1,4 +1,4 @@
-from flask import abort, render_template, request
+from flask import abort, redirect, render_template, request, session, url_for
 
 from app.catalog import blueprint
 from app.catalog.forms import UploadForm
@@ -13,6 +13,9 @@ from app.catalog.utils import (
 
 @blueprint.route("/")
 def index():
+    if session.get("authenticated", False) is False:
+        return redirect(url_for("catalog.explore"))
+
     return render_template("index.html")
 
 
