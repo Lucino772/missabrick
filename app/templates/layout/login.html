@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MissABrick</title>
+
+    <link rel="stylesheet" href="{{url_for('static', filename='css/tabler.min.css')}}">
+    <script src="{{url_for('static', filename='js/tabler.min.js')}}"></script>
+    <script src="{{url_for('static', filename='js/debounce.js')}}"></script>
+    <script src="{{url_for('static', filename='js/turbo.min.js')}}"></script>
+</head>
+
+<body>
+    <main class="container h-100" style="width: 350px; display: flex; justify-content: center; align-items: center;">
+        <div class="card w-100">
+            <div class="card-header">
+                <h3 class="card-title">
+                    {% block title %}{% endblock %}
+                </h3>
+              </div>
+            <div class="card-body">
+                {% block form %}{% endblock %}
+            </div>
+        </div>
+    </main>
+</body>
