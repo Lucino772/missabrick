@@ -1,4 +1,5 @@
 from app.catalog.services import (
+    RebrickableService,
     SqlColorsService,
     SqlElementsService,
     SqlInventoriesService,
@@ -25,3 +26,18 @@ parts_cats_srv = SqlPartsCategoriesService()
 parts_srv = SqlPartsService()
 sets_srv = SqlSetsService()
 themes_srv = SqlThemesService()
+
+rebrickable_srv = RebrickableService(
+    colors_srv=colors_srv,
+    elements_srv=elements_srv,
+    inventories_srv=inventories_srv,
+    inv_minifigs_srv=inv_minifigs_srv,
+    inv_parts_srv=inv_parts_srv,
+    inv_sets_srv=inv_sets_srv,
+    minifigs_srv=minifigs_srv,
+    parts_rels_srv=parts_rels_srv,
+    parts_cats_srv=parts_cats_srv,
+    parts_srv=parts_srv,
+    sets_srv=sets_srv,
+    themes_srv=themes_srv,
+)
