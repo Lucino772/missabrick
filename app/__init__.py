@@ -10,12 +10,14 @@ from app.services import (
     inv_parts_srv,
     inv_sets_srv,
     inventories_srv,
+    mail_srv,
     minifigs_srv,
     parts_cats_srv,
     parts_rels_srv,
     parts_srv,
     sets_srv,
     themes_srv,
+    users_srv,
 )
 from app.settings import Config
 
@@ -31,6 +33,9 @@ def create_app():
     session.init_app(app)
 
     # Services
+    users_srv.init_app(app, db)
+    mail_srv.init_app(app)
+
     colors_srv.init_app(app, db)
     elements_srv.init_app(app, db)
     inventories_srv.init_app(app, db)

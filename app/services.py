@@ -14,6 +14,7 @@ from app.catalog.services import (
     SqlSetsService,
     SqlThemesService,
 )
+from app.login.services import SendGridMailService, SqlUsersService
 
 colors_srv = SqlColorsService()
 elements_srv = SqlElementsService()
@@ -44,3 +45,6 @@ rebrickable_srv = RebrickableService(
 )
 
 report_srv = ReportService()
+
+users_srv = SqlUsersService()
+mail_srv = SendGridMailService()

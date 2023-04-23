@@ -18,3 +18,4 @@ class Config:
         "DATABASE_URI", "sqlite:///db.sqlite3"
     )
     SESSION_TYPE = "filesystem"
+    SENDGRID_API_KEY = os.environ.get("SENDGRID_API_KEY")
