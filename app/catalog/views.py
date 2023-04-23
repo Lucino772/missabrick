@@ -6,9 +6,10 @@ from app.catalog.utils import (
     gen_report,
     get_set_data,
     read_uploaded_set_excel_file,
-    search_sets,
     send_temp_file,
 )
+from app.extensions import db
+from app.services import sets_srv
 
 
 @blueprint.route("/")
@@ -25,7 +26,9 @@ def explore():
     search = request.args.get("search", "")
     page_size = int(request.args.get("page_size", 20))
 
-    pagination = search_sets(search, page, page_size)
+    pagination = sets_srv.search(
+        search, paginate=True, current_page=page, page_size=page_size
+    )
     return render_template(
         "explore.html", search=search, pagination=pagination
     )
