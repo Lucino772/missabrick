@@ -4,11 +4,9 @@ from app.catalog import blueprint
 from app.catalog.forms import UploadForm
 from app.catalog.utils import (
     gen_report,
-    get_set_data,
     read_uploaded_set_excel_file,
     send_temp_file,
 )
-from app.extensions import db
 from app.services import sets_srv
 
 
@@ -40,7 +38,7 @@ def download(set_number: int):
     # get_set_data('5006061-1')
     # get_set_data('K8672-1')
 
-    parts, minifigs_parts, elements = get_set_data(set_number)
+    parts, minifigs_parts, elements = sets_srv.get_parts(set_number)
     return send_temp_file(set_number, parts, minifigs_parts, elements)
 
 
