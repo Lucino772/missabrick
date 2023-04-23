@@ -19,6 +19,7 @@ RUN pip3 install -r requirements.txt --no-cache-dir
 COPY . /opt/app/
 
 # Load data
+RUN flask db upgrade
 RUN flask catalog load
 
 CMD [ "/opt/app/start.sh" ]

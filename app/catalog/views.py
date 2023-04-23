@@ -1,18 +1,16 @@
-from flask import abort, render_template, request
+from flask import abort, redirect, render_template, request, session, url_for
 
 from app.catalog import blueprint
 from app.catalog.forms import UploadForm
-from app.catalog.utils import (
-    gen_report,
-    get_set_data,
-    read_uploaded_set_excel_file,
-    search_sets,
-    send_temp_file,
-)
+from app.catalog.services import report_srv, sets_srv
+from app.catalog.utils import read_uploaded_set_excel_file, send_temp_file
 
 
 @blueprint.route("/")
 def index():
+    if session.get("authenticated", False) is False:
+        return redirect(url_for("catalog.explore"))
+
     return render_template("index.html")
 
 
@@ -22,7 +20,9 @@ def explore():
     search = request.args.get("search", "")
     page_size = int(request.args.get("page_size", 20))
 
-    pagination = search_sets(search, page, page_size)
+    pagination = sets_srv.search(
+        search, paginate=True, current_page=page, page_size=page_size
+    )
     return render_template(
         "explore.html", search=search, pagination=pagination
     )
@@ -34,7 +34,7 @@ def download(set_number: int):
     # get_set_data('5006061-1')
     # get_set_data('K8672-1')
 
-    parts, minifigs_parts, elements = get_set_data(set_number)
+    parts, minifigs_parts, elements = sets_srv.get_parts(set_number)
     return send_temp_file(set_number, parts, minifigs_parts, elements)
 
 
@@ -57,7 +57,9 @@ def report():
             abort(400)
 
         # Generate report
-        set_report = gen_report(parts_df, minifigs_parts_df, elements_df)
+        set_report = report_srv.generate_report(
+            parts_df, minifigs_parts_df, elements_df
+        )
         return render_template(
             "report.html",
             parts=set_report["parts"],

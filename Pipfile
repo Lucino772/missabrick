@@ -12,6 +12,12 @@ flask = "*"
 flask-sqlalchemy = "*"
 flask-wtf = "*"
 flask-compress = "*"
+sqlalchemy-utils = "*"
+passlib = "*"
+flask-migrate = "*"
+flask-session = "*"
+itsdangerous = "*"
+sendgrid = "*"
 
 [dev-packages]
 nox = "*"
