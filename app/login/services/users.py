@@ -54,6 +54,7 @@ class SqlUsersService(AbstractUsersService, SqlServiceMixin):
         user = User(username=username, email=email, password=password)
         self.session.add(user)
         self.session.commit()
+        return user
 
     def delete(self, id: int):
         user = self.get(id)
