@@ -5,9 +5,8 @@ import itsdangerous
 import sqlalchemy as sa
 
 from app.login.models import User
-from app.login.services import InvalidEmailOrPassword
+from app.login.services import EmailVerificationError, InvalidEmailOrPassword
 from app.login.services._mixins import SqlServiceMixin
-from app.login.utils import EmailVerificationError
 
 
 class AbstractUsersService(abc.ABC):

@@ -2,8 +2,8 @@ from flask import abort, redirect, render_template, request, session, url_for
 
 from app.catalog import blueprint
 from app.catalog.forms import UploadForm
+from app.catalog.services import report_srv, sets_srv
 from app.catalog.utils import read_uploaded_set_excel_file, send_temp_file
-from app.services import report_srv, sets_srv
 
 
 @blueprint.route("/")

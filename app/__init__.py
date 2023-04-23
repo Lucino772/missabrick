@@ -1,24 +1,23 @@
 from flask import Flask
 
 from app.catalog import blueprint as catalog_bp
-from app.extensions import compress, db, migrate, session
-from app.login import blueprint as login_bp
-from app.services import (
+from app.catalog.services import (
     colors_srv,
     elements_srv,
     inv_minifigs_srv,
     inv_parts_srv,
     inv_sets_srv,
     inventories_srv,
-    mail_srv,
     minifigs_srv,
     parts_cats_srv,
     parts_rels_srv,
     parts_srv,
     sets_srv,
     themes_srv,
-    users_srv,
 )
+from app.extensions import compress, db, migrate, session
+from app.login import blueprint as login_bp
+from app.login.services import mail_srv, users_srv
 from app.settings import Config
 
 

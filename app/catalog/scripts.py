@@ -5,7 +5,7 @@ import tempfile
 from flask.cli import with_appcontext
 
 from app.catalog import blueprint
-from app.services import rebrickable_srv
+from app.catalog.services import rebrickable_srv
 
 
 @blueprint.cli.command("load")

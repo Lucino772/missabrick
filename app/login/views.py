@@ -2,8 +2,12 @@ from flask import flash, redirect, render_template, session, url_for
 
 from app.login import blueprint
 from app.login.forms import SignInForm, SignUpForm
-from app.login.services import EmailVerificationError, InvalidEmailOrPassword
-from app.services import mail_srv, users_srv
+from app.login.services import (
+    EmailVerificationError,
+    InvalidEmailOrPassword,
+    mail_srv,
+    users_srv,
+)
 
 
 @blueprint.route("/signin", methods=("POST", "GET"))
