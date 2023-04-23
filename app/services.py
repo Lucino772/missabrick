@@ -1,5 +1,6 @@
 from app.catalog.services import (
     RebrickableService,
+    ReportService,
     SqlColorsService,
     SqlElementsService,
     SqlInventoriesService,
@@ -41,3 +42,5 @@ rebrickable_srv = RebrickableService(
     sets_srv=sets_srv,
     themes_srv=themes_srv,
 )
+
+report_srv = ReportService()

@@ -11,5 +11,6 @@ from app.catalog.services.part_relationships import (
 )
 from app.catalog.services.parts import SqlPartsService
 from app.catalog.services.rebrickable import RebrickableService
+from app.catalog.services.report import ReportService
 from app.catalog.services.sets import SqlSetsService
 from app.catalog.services.themes import SqlThemesService
