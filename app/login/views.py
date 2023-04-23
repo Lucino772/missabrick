@@ -58,7 +58,9 @@ def signup():
             )
             # Send Email verification mail
             token = generate_verify_mail_token(form.email.data)
-            verify_url = url_for("login.verify_email", token=token)
+            verify_url = url_for(
+                "login.verify_email", token=token, _external=True
+            )
             send_verify_mail(form.email.data, verify_url)
         except EmailAlreadyTaken:
             error = "This email address is already used"
