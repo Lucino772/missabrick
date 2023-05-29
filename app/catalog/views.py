@@ -2,7 +2,7 @@ from flask import abort, redirect, render_template, request, session, url_for
 
 from app.catalog import blueprint
 from app.catalog.forms import UploadForm
-from app.catalog.services import report_srv, sets_srv
+from app.catalog.services import report_srv, sets_srv, themes_srv
 from app.catalog.utils import read_uploaded_set_excel_file, send_temp_file
 
 
@@ -19,12 +19,32 @@ def explore():
     page = int(request.args.get("page", 1))
     search = request.args.get("search", "")
     page_size = int(request.args.get("page_size", 20))
+    theme = request.args.get("theme", "any")
+    year = request.args.get("year", "any")
+
+    theme_val = int(theme) if theme is not None and theme != "any" else None
+    year_val = int(year) if year is not None and year != "any" else None
 
     pagination = sets_srv.search(
-        search, paginate=True, current_page=page, page_size=page_size
+        search,
+        paginate=True,
+        current_page=page,
+        page_size=page_size,
+        theme=theme_val,
+        year=year_val,
     )
+
+    themes = themes_srv.all()
+    years = sets_srv.get_years()
+
     return render_template(
-        "explore.html", search=search, pagination=pagination
+        "explore.html",
+        search=search,
+        theme=theme,
+        year=year,
+        pagination=pagination,
+        themes=themes,
+        years=years,
     )
 
 

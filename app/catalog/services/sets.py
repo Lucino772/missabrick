@@ -4,7 +4,7 @@ import typing as t
 import pandas as pd
 import sqlalchemy as sa
 
-from app.catalog.models import Inventory, Set
+from app.catalog.models import Inventory, Set, Theme
 from app.catalog.services._mixins import SqlServiceMixin
 
 
@@ -34,11 +34,17 @@ class AbstractSetsService(abc.ABC):
         paginate: bool = False,
         current_page: int = None,
         page_size: int = None,
+        theme: int = None,
+        year: str = None,
     ):
         raise NotImplementedError
 
     @abc.abstractmethod
     def imports(self, data: list):
+        raise NotImplementedError
+
+    @abc.abstractmethod
+    def get_years(self):
         raise NotImplementedError
 
 
@@ -235,12 +241,20 @@ class SqlSetsService(AbstractSetsService, SqlServiceMixin):
         paginate: bool = False,
         current_page: int = None,
         page_size: int = None,
+        theme: int = None,
+        year: int = None,
     ):
         select = (
             sa.select(Set)
             .filter(Set.set_num.contains(search))
             .order_by(Set.year)
         )
+
+        if theme is not None:
+            select = select.filter(Set.theme_id == theme)
+        if year is not None:
+            select = select.filter(Set.year == year)
+
         if paginate:
             return self.db.paginate(
                 select, page=current_page, per_page=page_size
@@ -263,3 +277,12 @@ class SqlSetsService(AbstractSetsService, SqlServiceMixin):
         )
         self.session.add_all(items)
         self.session.commit()
+
+    def get_years(self):
+        return (
+            self.session.execute(
+                sa.select(Set.year).distinct().order_by(Set.year)
+            )
+            .scalars()
+            .all()
+        )
