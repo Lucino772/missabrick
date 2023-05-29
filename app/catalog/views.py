@@ -40,7 +40,7 @@ def explore():
         page_size=page_size,
     )
 
-    themes = split_list(themes_srv.all(), 4)
+    themes = split_list(list({theme.name for theme in themes_srv.all()}), 4)
     years = split_list(sets_srv.get_years(), 12)
 
     return render_template(
