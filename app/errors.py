@@ -1,3 +1,7 @@
+class UserAlreadyExists(Exception):
+    pass
+
+
 class InvalidEmailOrPassword(Exception):
     pass
 
@@ -9,3 +13,7 @@ class EmailVerificationError(Exception):
         super().__init__(*args)
         self.timeout = timeout
         self.invalid_email = invalid_email
+
+
+class PasswordDoesNotMatch(Exception):
+    pass
