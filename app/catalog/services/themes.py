@@ -22,7 +22,11 @@ class AbstractThemesService(abc.ABC):
 
 class SqlThemesService(AbstractThemesService, SqlServiceMixin):
     def all(self):
-        return self.session.execute(sa.select(Theme)).scalars().all()
+        return (
+            self.session.execute(sa.select(Theme).order_by(Theme.name))
+            .scalars()
+            .all()
+        )
 
     def get(self, id: int):
         return (

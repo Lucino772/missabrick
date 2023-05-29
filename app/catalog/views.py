@@ -2,8 +2,21 @@ from flask import abort, redirect, render_template, request, session, url_for
 
 from app.catalog import blueprint
 from app.catalog.forms import UploadForm
-from app.catalog.services import report_srv, sets_srv
+from app.catalog.services import report_srv, sets_srv, themes_srv
 from app.catalog.utils import read_uploaded_set_excel_file, send_temp_file
+
+
+def split_list(alist: list, n: int):
+    page_size = (len(alist) // n) + 1
+
+    pages = []
+    for i in range(n):
+        page = [
+            value for value in alist[page_size * i : page_size * i + page_size]
+        ]
+        pages.append(page)
+
+    return pages
 
 
 @blueprint.route("/")
@@ -21,10 +34,21 @@ def explore():
     page_size = int(request.args.get("page_size", 20))
 
     pagination = sets_srv.search(
-        search, paginate=True, current_page=page, page_size=page_size
+        search,
+        paginate=True,
+        current_page=page,
+        page_size=page_size,
     )
+
+    themes = split_list(list({theme.name for theme in themes_srv.all()}), 4)
+    years = split_list(sets_srv.get_years(), 12)
+
     return render_template(
-        "explore.html", search=search, pagination=pagination
+        "explore.html",
+        search=search,
+        pagination=pagination,
+        themes=themes,
+        years=years,
     )
 
 

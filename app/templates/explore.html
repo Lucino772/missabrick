@@ -5,14 +5,18 @@
     <turbo-frame id="search-form">
         <form action="/explore" method="get" data-turbo-frame="search-result">
             <div class="row g-2">
+                <div class="col-auto d-flex justify-content-center align-items-center">
+                    <span class="form-help" data-bs-toggle="modal" data-bs-target="#infoModal">?</span>
+                </div>
                 <div class="col">
                     <div class="input-icon">
-                        <input name="search" type="text" placeholder="Search" class="form-control" oninput="debounce(() => this.form.requestSubmit(), 500)();">
+                        <input name="search" type="text"
+                            placeholder="You can filter by theme, year, name or id (e.g. theme:&quot;System&quot;, name:&quot;X-Wing&quot;)"
+                            class="form-control" oninput="debounce(() => this.form.requestSubmit(), 500)();">
                         <span class="input-icon-addon">
-                            <!-- Download SVG icon from http://tabler-icons.io/i/search -->
-                            <svg xmlns="http://www.w3.org/2000/svg" class="icon" width="24" height="24" viewBox="0 0 24 24"
-                                stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round"
-                                stroke-linejoin="round">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="icon" width="24" height="24"
+                                viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none"
+                                stroke-linecap="round" stroke-linejoin="round">
                                 <path stroke="none" d="M0 0h24v24H0z" fill="none" />
                                 <circle cx="10" cy="10" r="7" />
                                 <line x1="21" y1="21" x2="15" y2="15" />
@@ -29,6 +33,40 @@
                 </div>
             </div>
         </form>
+
+        <!-- Info Modal -->
+        <div class="modal" id="infoModal" tabindex="-1">
+            <div class="modal-dialog modal-fullscreen" role="document">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title">Help</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body">
+                        <div class="container-fluid mb-3">
+                            <p>Years</p>
+                            <div class="d-flex flex-row flex-wrap align-items-stretch gap-1">
+                            {% for year_page in years %}
+                                {% for year in year_page %}
+                                <span class="badge rounded-pill text-bg-secondary">{{ year }}</span>
+                                {% endfor %}
+                            {% endfor %}
+                            </div>
+                        </div>
+                        <div class="container-fluid mb-3">
+                            <p>Themes</p>
+                            <div class="d-flex flex-row flex-wrap align-items-stretch gap-1">
+                            {% for theme_page in themes %}
+                                {% for theme in theme_page %}
+                                <span class="badge rounded-pill text-bg-secondary">{{ theme }}</span>
+                                {% endfor %}
+                            {% endfor %}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
     </turbo-frame>
     <turbo-frame id="search-result">
         <p class="text-end my-3"><em>{{ pagination.total }} results</em></p>
@@ -57,7 +95,8 @@
                     <td>{{ aset.num_parts }}</td>
                     <td>White</td>
                     <td>
-                        <a href="{{url_for('catalog.download', set_number=aset.set_num)}}" target="_blank" data-turbo="false">
+                        <a href="{{url_for('catalog.download', set_number=aset.set_num)}}" target="_blank"
+                            data-turbo="false">
                             <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-download"
                                 width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"
                                 fill="none" stroke-linecap="round" stroke-linejoin="round">
@@ -83,16 +122,21 @@
                                         <span aria-hidden="true">&laquo;</span>
                                     </a>
                                 </li>
-                                {% for page in pagination.iter_pages(left_edge=2, left_current=1, right_edge=2, right_current=1) %}
-                                    {% if page %}
-                                        {% if page != pagination.page %}
-                                            <li class="page-item"><a class="page-link" href="{{ url_for('catalog.explore', search=search, page=page, page_size=pagination.per_page) }}">{{page}}</a></li>
-                                        {% else %}
-                                            <li class="page-item active"><a class="page-link" href="{{ url_for('catalog.explore', search=search, page=page, page_size=pagination.per_page) }}">{{page}}</a></li>
-                                        {% endif %}
-                                    {% else %}
-                                        <span class=ellipsis>…</span>
-                                    {% endif %}
+                                {% for page in pagination.iter_pages(left_edge=2, left_current=1, right_edge=2,
+                                right_current=1) %}
+                                {% if page %}
+                                {% if page != pagination.page %}
+                                <li class="page-item"><a class="page-link"
+                                        href="{{ url_for('catalog.explore', search=search, page=page, page_size=pagination.per_page) }}">{{page}}</a>
+                                </li>
+                                {% else %}
+                                <li class="page-item active"><a class="page-link"
+                                        href="{{ url_for('catalog.explore', search=search, page=page, page_size=pagination.per_page) }}">{{page}}</a>
+                                </li>
+                                {% endif %}
+                                {% else %}
+                                <span class=ellipsis>…</span>
+                                {% endif %}
                                 {% endfor %}
                                 <li class="page-item">
                                     <a class="page-link {% if pagination.has_next == False %}disabled{% endif %}"
