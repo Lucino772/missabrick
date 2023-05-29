@@ -6,6 +6,19 @@ from app.catalog.services import report_srv, sets_srv, themes_srv
 from app.catalog.utils import read_uploaded_set_excel_file, send_temp_file
 
 
+def split_list(alist: list, n: int):
+    page_size = (len(alist) // n) + 1
+
+    pages = []
+    for i in range(n):
+        page = [
+            value for value in alist[page_size * i : page_size * i + page_size]
+        ]
+        pages.append(page)
+
+    return pages
+
+
 @blueprint.route("/")
 def index():
     if session.get("authenticated", False) is False:
@@ -27,10 +40,15 @@ def explore():
         page_size=page_size,
     )
 
+    themes = split_list(themes_srv.all(), 4)
+    years = split_list(sets_srv.get_years(), 12)
+
     return render_template(
         "explore.html",
         search=search,
         pagination=pagination,
+        themes=themes,
+        years=years,
     )
 
 

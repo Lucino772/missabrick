@@ -274,7 +274,7 @@ class SqlSetsService(AbstractSetsService, SqlServiceMixin):
                     .all()
                 )
                 if len(theme_id) > 0:
-                    select = select.filter(Set.theme_id == theme_id[0])
+                    select = select.filter(Set.theme_id.in_(theme_id))
             elif key == "year":
                 select = select.filter(Set.year == int(value))
             elif key == "name":
