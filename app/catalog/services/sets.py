@@ -1,4 +1,5 @@
 import abc
+import re
 import typing as t
 
 import pandas as pd
@@ -235,25 +236,43 @@ class SqlSetsService(AbstractSetsService, SqlServiceMixin):
 
         return _parts, _fig_parts, _elements
 
+    def _parse_search_query(self, search: str):
+        keyword_regex = r'(\w+):(("(.*?)")|(\w+))'
+        groups = re.findall(keyword_regex, search)
+        keywords = [(group[0], group[3] or group[4]) for group in groups]
+        return keywords, re.sub(
+            r" +", " ", re.sub(keyword_regex, "", search).strip()
+        )
+
     def search(
         self,
         search: str,
         paginate: bool = False,
         current_page: int = None,
         page_size: int = None,
-        theme: int = None,
-        year: int = None,
     ):
-        select = (
-            sa.select(Set)
-            .filter(Set.set_num.contains(search))
-            .order_by(Set.year)
-        )
+        keywords, ft_search = self._parse_search_query(search)
+        select = sa.select(Set).order_by(Set.year)
 
-        if theme is not None:
-            select = select.filter(Set.theme_id == theme)
-        if year is not None:
-            select = select.filter(Set.year == year)
+        for key, value in keywords:
+            if key == "theme":
+                theme_id = (
+                    self.session.execute(
+                        sa.select(Theme.id).filter(
+                            Theme.name.contains(str(value))
+                        )
+                    )
+                    .scalars()
+                    .all()
+                )
+                if len(theme_id) > 0:
+                    select = select.filter(Set.theme_id == theme_id[0])
+            elif key == "year":
+                select = select.filter(Set.year == int(value))
+            elif key == "name":
+                select = select.filter(Set.name.contains(str(value)))
+            elif key == "id":
+                select = select.filter(Set.set_num.contains(str(value)))
 
         if paginate:
             return self.db.paginate(
