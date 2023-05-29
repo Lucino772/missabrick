@@ -254,6 +254,14 @@ class SqlSetsService(AbstractSetsService, SqlServiceMixin):
         keywords, ft_search = self._parse_search_query(search)
         select = sa.select(Set).order_by(Set.year)
 
+        if len(ft_search) > 0:
+            select = select.filter(
+                sa.or_(
+                    Set.set_num.contains(ft_search),
+                    Set.name.contains(ft_search),
+                )
+            )
+
         for key, value in keywords:
             if key == "theme":
                 theme_id = (
