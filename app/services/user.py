@@ -86,4 +86,4 @@ class MailService:
 
 
 mail_service = MailService()
-user_service = UserService()
+user_service = UserService(mail_service)
