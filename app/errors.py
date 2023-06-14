@@ -17,3 +17,7 @@ class EmailVerificationError(Exception):
 
 class PasswordDoesNotMatch(Exception):
     pass
+
+
+class SetDoesNotExists(Exception):
+    pass

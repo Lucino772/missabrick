@@ -13,6 +13,7 @@ T = t.TypeVar("T")
 class GenericDao(t.Generic[T]):
     def __init__(self, model: t.Type[T]) -> None:
         self.model = model
+        self.db = db
         self.session: Session = db.session
 
     def all(self):
