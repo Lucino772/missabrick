@@ -2,8 +2,8 @@ from flask import abort, redirect, render_template, request, session, url_for
 
 from app.catalog import blueprint
 from app.catalog.forms import UploadForm
-from app.catalog.services import report_srv, sets_srv, themes_srv
 from app.catalog.utils import read_uploaded_set_excel_file, send_temp_file
+from app.services.catalog import catalog_service, report_service
 
 
 def split_list(alist: list, n: int):
@@ -33,15 +33,14 @@ def explore():
     search = request.args.get("search", "")
     page_size = int(request.args.get("page_size", 20))
 
-    pagination = sets_srv.search(
+    pagination = catalog_service.search_sets(
         search,
         paginate=True,
         current_page=page,
         page_size=page_size,
     )
-
-    themes = split_list(list({theme.name for theme in themes_srv.all()}), 4)
-    years = split_list(sets_srv.get_years(), 12)
+    themes = split_list(catalog_service.get_themes(), 4)
+    years = split_list(catalog_service.get_years(), 12)
 
     return render_template(
         "explore.html",
@@ -58,7 +57,7 @@ def download(set_number: int):
     # get_set_data('5006061-1')
     # get_set_data('K8672-1')
 
-    parts, minifigs_parts, elements = sets_srv.get_parts(set_number)
+    parts, minifigs_parts, elements = catalog_service.get_parts(set_number)
     return send_temp_file(set_number, parts, minifigs_parts, elements)
 
 
@@ -81,7 +80,7 @@ def report():
             abort(400)
 
         # Generate report
-        set_report = report_srv.generate_report(
+        set_report = report_service.generate_report(
             parts_df, minifigs_parts_df, elements_df
         )
         return render_template(
