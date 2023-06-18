@@ -40,7 +40,7 @@ class CatalogService:
 
         select = (
             sa.select(GenericSet)
-            .filter(GenericSet.is_minifig is False)
+            .filter(GenericSet.is_minifig.is_(False))
             .join(Year, GenericSet.year_id == Year.id)
             .order_by(Year.name)
         )
