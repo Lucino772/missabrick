@@ -2,8 +2,8 @@ from flask import abort, redirect, render_template, request, session, url_for
 
 from app.catalog import blueprint
 from app.catalog.forms import UploadForm
+from app.catalog.services import catalog_service, report_service
 from app.catalog.utils import read_uploaded_set_excel_file, send_temp_file
-from app.services.catalog import catalog_service, report_service
 
 
 def split_list(alist: list, n: int):
@@ -31,7 +31,7 @@ def index():
 def explore():
     page = int(request.args.get("page", 1))
     search = request.args.get("search", "")
-    page_size = int(request.args.get("page_size", 20))
+    page_size = int(request.args.get("page_size", 10))
 
     pagination = catalog_service.search_sets(
         search,

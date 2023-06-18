@@ -1,18 +1,25 @@
 import datetime as dt
+import typing as t
 
 import itsdangerous
 import sendgrid
+import sqlalchemy as sa
 from flask import current_app, url_for
 from sendgrid.helpers.mail import Content, Email, Mail, To
 
-from app.dao.user import user_dao
 from app.errors import (
     EmailVerificationError,
     InvalidEmailOrPassword,
     PasswordDoesNotMatch,
     UserAlreadyExists,
 )
-from app.models.user import User
+from app.extensions import db
+from app.login.models import User
+
+if t.TYPE_CHECKING:
+    from sqlalchemy.orm import Session
+
+_sentinel = object()
 
 
 def _get_dangerous_serializer():
@@ -23,8 +30,30 @@ def _get_dangerous_serializer():
 
 
 class UserService:
-    def __init__(self, mail_srv: "MailService") -> None:
+    __slots__ = ("db", "session", "mail_srv")
+
+    def __init__(self, mail_srv: "MailService" = None) -> None:
+        self.db = db
+        self.session: "Session" = db.session
         self.mail_srv = mail_srv
+
+    def _user_exists(self, email: str = _sentinel, username: str = _sentinel):
+        conditions = []
+        if email is not _sentinel:
+            conditions.append(User.email == email)
+        if username is not _sentinel:
+            conditions.append(User.username == username)
+
+        if len(conditions) == 0:
+            return False
+
+        query = sa.select(User).where(sa.or_(*conditions))
+        return self.session.execute(query).scalars().first() is not None
+
+    def _get_user_by_email(self, email: str):
+        return self.session.execute(
+            sa.select(User).filter(User.email == email)
+        ).scalar_one_or_none()
 
     def create_user(
         self, username: str, email: str, password: str, confirm: str
@@ -32,11 +61,12 @@ class UserService:
         if password != confirm:
             raise PasswordDoesNotMatch()
 
-        if user_dao.exists(email, username):
+        if self._user_exists(email, username):
             raise UserAlreadyExists()
 
         user = User(username=username, email=email, password=password)
-        user_dao.save(user)
+        self.session.add(user)
+        self.session.commit()
 
         # Send email confirmation link
         token = _get_dangerous_serializer().dumps(user.email)
@@ -53,7 +83,7 @@ class UserService:
         return user
 
     def check_password(self, email: str, password: str):
-        user = user_dao.get_by_email(email)
+        user = self._get_user_by_email(email)
         if user is None or user.password != password:
             raise InvalidEmailOrPassword()
 
@@ -62,13 +92,14 @@ class UserService:
             email = _get_dangerous_serializer().loads(
                 token, max_age=expiration
             )
-            user = user_dao.get_by_email(email)
+            user = self._get_user_by_email(email)
             if user is None:
                 raise EmailVerificationError(invalid_email=True)
 
             user.email_verified = True
             user.email_verified_on = dt.datetime.now()
-            user_dao.save()
+            self.session.add(user)
+            self.session.commit()
         except itsdangerous.SignatureExpired:
             raise EmailVerificationError(timeout=True)
         except itsdangerous.BadSignature:

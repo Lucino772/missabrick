@@ -88,14 +88,14 @@
                 {% for aset in pagination %}
                 <tr>
                     <th>{{ loop.index }}</th>
-                    <td>{{ aset.set_num }}</td>
+                    <td>{{ aset.id }}</td>
                     <td>{{ aset.name }}</td>
                     <td>{{ aset.theme.name }}</td>
-                    <td>{{ aset.year }}</td>
+                    <td>{{ aset.year.name }}</td>
                     <td>{{ aset.num_parts }}</td>
                     <td>White</td>
                     <td>
-                        <a href="{{url_for('catalog.download', set_number=aset.set_num)}}" target="_blank"
+                        <a href="{{url_for('catalog.download', set_number=aset.id)}}" target="_blank"
                             data-turbo="false">
                             <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-download"
                                 width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"

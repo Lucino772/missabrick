@@ -8,7 +8,7 @@ from app.errors import (
 )
 from app.login import blueprint
 from app.login.forms import SignInForm, SignUpForm
-from app.services.user import user_service
+from app.login.services import user_service
 
 
 @blueprint.route("/signin", methods=("POST", "GET"))
