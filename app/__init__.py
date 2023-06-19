@@ -1,9 +1,10 @@
 from flask import Flask
 
-from app.catalog import blueprint as catalog_bp
 from app.extensions import compress, db, migrate, session
-from app.login import blueprint as login_bp
 from app.settings import Config
+from app.views.explore import ExploreView
+from app.views.login import LoginView
+from app.views.report import ReportView
 
 
 def create_app():
@@ -17,6 +18,8 @@ def create_app():
     session.init_app(app)
 
     # Blueprints
-    app.register_blueprint(login_bp)
-    app.register_blueprint(catalog_bp)
+    app.register_blueprint(LoginView().as_blueprint())
+    app.register_blueprint(ExploreView().as_blueprint())
+    app.register_blueprint(ReportView().as_blueprint())
+
     return app
