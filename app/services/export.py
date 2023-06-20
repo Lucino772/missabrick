@@ -68,7 +68,7 @@ class ExportService(IExportService):
                 "quantity": set_part.quantity * quantity,
             }
             if fig_id is not None:
-                item["fig_id"] = fig_id
+                item["fig_num"] = fig_id
 
             yield item
 
@@ -110,7 +110,7 @@ class ExportService(IExportService):
             )
             elements.extend(self._format_elements(_subset.id, _subset.parts))
 
-            for minifig, fig_quantity in self._get_minifigs(
+            for _, minifig, fig_quantity in self._get_minifigs(
                 _subset, quantity=_quantity, recursive=False
             ):
                 fig_parts.extend(

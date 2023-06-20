@@ -18,7 +18,7 @@ class ExploreController(AbstractController[IExploreView], IExploreController):
 
         return self.view.render(
             "explore.html",
-            search=search,
+            search=query,
             pagination=results,
             themes=themes,
             years=years,

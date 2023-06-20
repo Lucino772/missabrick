@@ -23,6 +23,6 @@ class ExploreView(AbstractView[IExploreController], IExploreView):
         explore_bp = Blueprint("explore", __name__, url_prefix="/explore")
         explore_bp.add_url_rule("/", view_func=self.index)
         explore_bp.add_url_rule(
-            "/download/<int:set_id>", view_func=self.download
+            "/download/<string:set_id>", view_func=self.download
         )
         return explore_bp

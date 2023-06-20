@@ -11,7 +11,7 @@ from app.services.report import ReportService
 
 
 class ReportController(AbstractController[IReportView], IReportController):
-    def _read_uploaded_set_excel_file(file: FileStorage):
+    def _read_uploaded_set_excel_file(self, file: FileStorage):
         dataframes = {}
         with NamedTemporaryFile() as fp:
             file.save(fp)
