@@ -46,20 +46,16 @@
                         <div class="container-fluid mb-3">
                             <p>Years</p>
                             <div class="d-flex flex-row flex-wrap align-items-stretch gap-1">
-                            {% for year_page in years %}
-                                {% for year in year_page %}
+                            {% for year in years %}
                                 <span class="badge rounded-pill text-bg-secondary">{{ year }}</span>
-                                {% endfor %}
                             {% endfor %}
                             </div>
                         </div>
                         <div class="container-fluid mb-3">
                             <p>Themes</p>
                             <div class="d-flex flex-row flex-wrap align-items-stretch gap-1">
-                            {% for theme_page in themes %}
-                                {% for theme in theme_page %}
+                            {% for theme in themes %}
                                 <span class="badge rounded-pill text-bg-secondary">{{ theme }}</span>
-                                {% endfor %}
                             {% endfor %}
                             </div>
                         </div>

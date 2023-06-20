@@ -7,3 +7,9 @@ class IView(t.Protocol):
 
     def send_file(self, filename: str, source: str, type: str, fd: int = None):
         ...
+
+    def abort(self, code: int):
+        ...
+
+    def redirect(self, location: str):
+        ...

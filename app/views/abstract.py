@@ -2,7 +2,7 @@ import os
 import typing as t
 from abc import ABC, abstractmethod
 
-from flask import make_response, render_template
+from flask import abort, make_response, redirect, render_template
 
 from app.factory.controller import ControllerFactory
 from app.interfaces.controllers.controller import IController
@@ -44,6 +44,12 @@ class AbstractView(ABC, IView, t.Generic[Controller_T]):
 
     def render(self, template: str, **context):
         return render_template(template, **context)
+
+    def abort(self, code: int):
+        abort(code)
+
+    def redirect(self, location: str):
+        return redirect(location)
 
     @abstractmethod
     def as_blueprint(self):
