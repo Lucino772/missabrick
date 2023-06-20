@@ -2,10 +2,8 @@ import datetime as dt
 import typing as t
 
 import itsdangerous
-import sendgrid
 import sqlalchemy as sa
 from flask import current_app, url_for
-from sendgrid.helpers.mail import Content, Email, Mail, To
 
 from app.errors import (
     EmailVerificationError,
@@ -14,10 +12,13 @@ from app.errors import (
     UserAlreadyExists,
 )
 from app.extensions import db
-from app.login.models import User
+from app.interfaces.services.user import IUserService
+from app.models.orm.login import User
 
 if t.TYPE_CHECKING:
     from sqlalchemy.orm import Session
+
+    from app.services.mail import MailService
 
 _sentinel = object()
 
@@ -29,7 +30,7 @@ def _get_dangerous_serializer():
     )
 
 
-class UserService:
+class UserService(IUserService):
     __slots__ = ("db", "session", "mail_srv")
 
     def __init__(self, mail_srv: "MailService" = None) -> None:
@@ -104,17 +105,3 @@ class UserService:
             raise EmailVerificationError(timeout=True)
         except itsdangerous.BadSignature:
             raise EmailVerificationError()
-
-
-class MailService:
-    def send(self, _from: str, to: str, subject: str, content: str):
-        sg = sendgrid.SendGridAPIClient(
-            api_key=current_app.config["SENDGRID_API_KEY"]
-        )
-        text_content = Content("text/plain", content)
-        mail_json = Mail(Email(_from), To(to), subject, text_content).get()
-        return sg.send(mail_json)
-
-
-mail_service = MailService()
-user_service = UserService(mail_service)
