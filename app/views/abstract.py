@@ -13,7 +13,7 @@ Controller_T = t.TypeVar("Controller_T", bound=IController)
 
 
 class AbstractView(ABC, IView, t.Generic[Controller_T]):
-    __slots__ = ("controller", "controller_factory")
+    __slots__ = ("controller",)
 
     controller_factory: IControllerFactory = ControllerFactory()
 

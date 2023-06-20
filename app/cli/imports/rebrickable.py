@@ -18,7 +18,8 @@ import pandas as pd
 import requests
 import sqlalchemy as sa
 
-from app.catalog.models import (
+from app.extensions import db
+from app.models.orm.lego import (
     Color,
     Element,
     GenericSet,
@@ -29,7 +30,6 @@ from app.catalog.models import (
     Theme,
     Year,
 )
-from app.extensions import db
 
 _URLS = {
     "themes": "https://cdn.rebrickable.com/media/downloads/themes.csv.gz",

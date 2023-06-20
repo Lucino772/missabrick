@@ -1,12 +1,13 @@
 import sqlalchemy as sa
-from flask.cli import with_appcontext
+from flask.cli import AppGroup, with_appcontext
 
 from app.extensions import db
-from app.login import blueprint
-from app.login.models import User
+from app.models.orm.login import User
+
+user_cli = AppGroup("user")
 
 
-@blueprint.cli.command("clear-users")
+@user_cli.command("clear")
 @with_appcontext
 def clear_users():
     db.session.execute(sa.delete(User))

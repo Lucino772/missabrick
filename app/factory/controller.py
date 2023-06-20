@@ -9,11 +9,11 @@ from app.interfaces.views.report import IReportView
 
 class ControllerFactory(IControllerFactory):
     def get_controller(self, view):
-        if isinstance(IExploreView):
+        if isinstance(view, IExploreView):
             return ExploreController(view)
-        elif isinstance(ILoginView):
+        elif isinstance(view, ILoginView):
             return LoginController(view)
-        elif isinstance(IReportView):
+        elif isinstance(view, IReportView):
             return ReportController(view)
         else:
             raise RuntimeError("Invalid view")

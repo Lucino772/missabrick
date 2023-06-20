@@ -1,5 +1,7 @@
 from flask import Flask
 
+from app.cli.imports import data_cli
+from app.cli.user import user_cli
 from app.extensions import compress, db, migrate, session
 from app.settings import Config
 from app.views.explore import ExploreView
@@ -21,5 +23,9 @@ def create_app():
     app.register_blueprint(LoginView().as_blueprint())
     app.register_blueprint(ExploreView().as_blueprint())
     app.register_blueprint(ReportView().as_blueprint())
+
+    # CLI
+    app.cli.add_command(data_cli)
+    app.cli.add_command(user_cli)
 
     return app
