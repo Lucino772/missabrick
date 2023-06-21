@@ -7,7 +7,6 @@ from app.errors import (
     PasswordDoesNotMatch,
     UserAlreadyExists,
 )
-from app.factories import service_factory
 from app.forms.login import SignInForm, SignUpForm
 from app.interfaces.controllers.login import ILoginController
 from app.interfaces.views.login import ILoginView
@@ -22,7 +21,7 @@ class LoginController(AbstractController[ILoginView], ILoginController):
         error = None
         if form.validate():
             try:
-                user_service = service_factory.get_user_service()
+                user_service = self.service_factory.get_user_service()
                 user_service.check_password(
                     form.email.data, form.password.data
                 )
@@ -41,7 +40,7 @@ class LoginController(AbstractController[ILoginView], ILoginController):
         error = None
         if form.validate():
             try:
-                user_service = service_factory.get_user_service()
+                user_service = self.service_factory.get_user_service()
                 user_service.create_user(
                     username=form.username.data,
                     email=form.email.data,
@@ -66,7 +65,7 @@ class LoginController(AbstractController[ILoginView], ILoginController):
     def verify_email(self, token: str):
         error = None
         try:
-            user_service = service_factory.get_user_service()
+            user_service = self.service_factory.get_user_service()
             user_service.verify_email(token)
             flash("Your email was verified", category="info")
             return self.view.redirect(url_for("explore.index"))
