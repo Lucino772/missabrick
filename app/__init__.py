@@ -1,12 +1,14 @@
-from flask import Flask
+from flask import Flask, g
 
 from app.cli.imports import data_cli
 from app.cli.user import user_cli
+from app.controllers.explore import blueprint as explore_bp
+from app.controllers.login import blueprint as login_bp
+from app.controllers.report import blueprint as report_bp
 from app.extensions import compress, db, migrate, session
+from app.factories import teardown_service_factory
+from app.factory.service import ServiceFactory
 from app.settings import Config
-from app.views.explore import ExploreView
-from app.views.login import LoginView
-from app.views.report import ReportView
 
 
 def create_app():
@@ -20,12 +22,16 @@ def create_app():
     session.init_app(app)
 
     # Blueprints
-    app.register_blueprint(LoginView().as_blueprint())
-    app.register_blueprint(ExploreView().as_blueprint())
-    app.register_blueprint(ReportView().as_blueprint())
+    app.register_blueprint(explore_bp)
+    app.register_blueprint(login_bp)
+    app.register_blueprint(report_bp)
 
     # CLI
     app.cli.add_command(data_cli)
     app.cli.add_command(user_cli)
+
+    # Service Factory
+    app.service_factory_class = ServiceFactory
+    app.teardown_appcontext(teardown_service_factory)
 
     return app

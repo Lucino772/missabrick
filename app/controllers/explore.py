@@ -1,34 +1,40 @@
-from app.controllers.abstract import AbstractController
-from app.interfaces.controllers.explore import IExploreController
-from app.interfaces.views.explore import IExploreView
+from flask import Blueprint, render_template, request
+
+from app.factories import service_factory
+from app.utils import send_file
+
+blueprint = Blueprint("explore", __name__, url_prefix="/explore")
 
 
-class ExploreController(AbstractController[IExploreView], IExploreController):
-    def search(self, query: str, current_page: int, page_size: int):
-        search_service = self.service_factory.get_search_service()
+@blueprint.route("/")
+def index():
+    page = int(request.args.get("page", 1))
+    query = request.args.get("search", "")
+    page_size = int(request.args.get("page_size", 10))
 
-        keywords, search = search_service.parse_query(query)
-        results = search_service.search(
-            search, keywords, current_page, page_size
-        )
-        themes = search_service.get_themes()
-        years = search_service.get_years()
+    search_service = service_factory.get_search_service()
+    keywords, search = search_service.parse_query(query)
+    results = search_service.search(search, keywords, page, page_size)
+    themes = search_service.get_themes()
+    years = search_service.get_years()
 
-        return self.view.render(
-            "explore.html",
-            search=query,
-            pagination=results,
-            themes=themes,
-            years=years,
-        )
+    return render_template(
+        "explore.html",
+        search=query,
+        pagination=results,
+        themes=themes,
+        years=years,
+    )
 
-    def download(self, set_id: str):
-        export_service = self.service_factory.get_export_service()
 
-        fd, filename = export_service.export_parts(set_id)
-        return self.view.send_file(
-            f"{set_id}.xlsx",
-            filename,
-            "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-            fd,
-        )
+@blueprint.route("/download/<string:set_id>")
+def download(set_id: str):
+    export_service = service_factory.get_export_service()
+
+    fd, filename = export_service.export_parts(set_id)
+    return send_file(
+        f"{set_id}.xlsx",
+        filename,
+        "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+        fd,
+    )
