@@ -1,11 +1,14 @@
 from flask import Blueprint, request
 
+from app.factory.controller import ControllerFactory
 from app.interfaces.controllers.explore import IExploreController
 from app.interfaces.views.explore import IExploreView
 from app.views.abstract import AbstractView
 
 
 class ExploreView(AbstractView[IExploreController], IExploreView):
+    controller_factory = ControllerFactory().get_explore_controller
+
     def index(self):
         page = int(request.args.get("page", 1))
         search = request.args.get("search", "")

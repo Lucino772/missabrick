@@ -3,20 +3,15 @@ import typing as t
 from app.interfaces.controllers.explore import IExploreController
 from app.interfaces.controllers.login import ILoginController
 from app.interfaces.controllers.report import IReportController
-from app.interfaces.views.explore import IExploreView
-from app.interfaces.views.login import ILoginView
-from app.interfaces.views.report import IReportView
+from app.interfaces.views.view import IView
 
 
 class IControllerFactory(t.Protocol):
-    @t.overload
-    def get_controller(self, view: IExploreView) -> IExploreController:
+    def get_explore_controller(self, view: IView) -> IExploreController:
         ...
 
-    @t.overload
-    def get_controller(self, view: ILoginView) -> ILoginController:
+    def get_login_controller(self, view: IView) -> ILoginController:
         ...
 
-    @t.overload
-    def get_controller(self, view: IReportView) -> IReportController:
+    def get_report_controller(self, view: IView) -> IReportController:
         ...
