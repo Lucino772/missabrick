@@ -12,8 +12,10 @@ from app.errors import (
     UserAlreadyExists,
 )
 from app.extensions import db
+from app.interfaces.factory.service import IServiceFactory
 from app.interfaces.services.user import IUserService
 from app.models.orm.login import User
+from app.services.abstract import AbstractService
 
 if t.TYPE_CHECKING:
     from sqlalchemy.orm import Session
@@ -30,13 +32,14 @@ def _get_dangerous_serializer():
     )
 
 
-class UserService(IUserService):
+class UserService(AbstractService, IUserService):
     __slots__ = ("db", "session", "mail_srv")
 
-    def __init__(self, mail_srv: "MailService" = None) -> None:
+    def __init__(self, factory: IServiceFactory) -> None:
+        super().__init__(factory)
         self.db = db
         self.session: "Session" = db.session
-        self.mail_srv = mail_srv
+        self.mail_srv = self.service_factory.get_mail_service()
 
     def _user_exists(self, email: str = _sentinel, username: str = _sentinel):
         conditions = []

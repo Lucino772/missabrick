@@ -4,10 +4,10 @@ import pandas as pd
 from werkzeug.datastructures import FileStorage
 
 from app.controllers.abstract import AbstractController
+from app.factories import service_factory
 from app.forms.report import UploadForm
 from app.interfaces.controllers.report import IReportController
 from app.interfaces.views.report import IReportView
-from app.services.report import ReportService
 
 
 class ReportController(AbstractController[IReportView], IReportController):
@@ -45,7 +45,7 @@ class ReportController(AbstractController[IReportView], IReportController):
                 self.view.abort(400)
 
             # Generate report
-            report_service = ReportService()
+            report_service = service_factory.get_report_service()
             set_report = report_service.generate_report(
                 parts_df, minifigs_parts_df, elements_df
             )

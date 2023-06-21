@@ -1,13 +1,13 @@
 from flask import Blueprint
 
-from app.factory.controller import ControllerFactory
+from app.factories import controller_factory
 from app.interfaces.controllers.login import ILoginController
 from app.interfaces.views.login import ILoginView
 from app.views.abstract import AbstractView
 
 
 class LoginView(AbstractView[ILoginController], ILoginView):
-    controller_factory = ControllerFactory().get_login_controller
+    controller_factory = controller_factory.get_login_controller
 
     def signin(self):
         return self.controller.signin()

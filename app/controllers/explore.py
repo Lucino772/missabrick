@@ -1,13 +1,12 @@
 from app.controllers.abstract import AbstractController
+from app.factories import service_factory
 from app.interfaces.controllers.explore import IExploreController
 from app.interfaces.views.explore import IExploreView
-from app.services.export import ExportService
-from app.services.search import SearchService
 
 
 class ExploreController(AbstractController[IExploreView], IExploreController):
     def search(self, query: str, current_page: int, page_size: int):
-        search_service = SearchService()
+        search_service = service_factory.get_search_service()
 
         keywords, search = search_service.parse_query(query)
         results = search_service.search(
@@ -25,7 +24,7 @@ class ExploreController(AbstractController[IExploreView], IExploreController):
         )
 
     def download(self, set_id: str):
-        export_service = ExportService()
+        export_service = service_factory.get_export_service()
 
         fd, filename = export_service.export_parts(set_id)
         return self.view.send_file(
