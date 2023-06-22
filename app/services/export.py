@@ -5,6 +5,7 @@ import pandas as pd
 
 from app.errors import SetDoesNotExists
 from app.extensions import db
+from app.factories import dao_factory
 from app.interfaces.factory.service import IServiceFactory
 from app.interfaces.services.export import IExportService
 from app.models.orm.lego import GenericSet, GenericSetPart
@@ -18,36 +19,7 @@ class ExportService(AbstractService, IExportService):
     def __init__(self, factory: IServiceFactory) -> None:
         super().__init__(factory)
         self.session: "Session" = db.session
-
-    def _get_subsets(
-        self, _set: GenericSet, quantity: int = 1, recursive: bool = True
-    ):
-        _subsets: t.List[t.Tuple[GenericSet, int]] = [(_set, quantity)]
-
-        if recursive:
-            for subset in _set.children_rel:
-                if not subset.child.is_minifig:
-                    _subsets.extend(
-                        self._get_subsets(
-                            subset.child, subset.quantity * quantity, True
-                        )
-                    )
-
-        return _subsets
-
-    def _get_minifigs(
-        self, _set: GenericSet, quantity: int = 1, recursive: bool = True
-    ):
-        _minifigs: t.List[t.Tuple[GenericSet, GenericSet, int]] = []
-
-        for subset, _quantity in self._get_subsets(_set, quantity, recursive):
-            for minifig in subset.children_rel:
-                if minifig.child.is_minifig:
-                    _minifigs.append(
-                        (subset, minifig.child, minifig.quantity * _quantity)
-                    )
-
-        return _minifigs
+        self.generic_set_dao = dao_factory.get_generic_set_dao()
 
     def _format_parts(
         self,
@@ -105,7 +77,7 @@ class ExportService(AbstractService, IExportService):
         if _set is None:
             raise SetDoesNotExists()
 
-        for _subset, _quantity in self._get_subsets(
+        for _subset, _quantity in self.generic_set_dao.get_subsets(
             _set, quantity=quantity, recursive=True
         ):
             parts.extend(
@@ -113,7 +85,7 @@ class ExportService(AbstractService, IExportService):
             )
             elements.extend(self._format_elements(_subset.id, _subset.parts))
 
-            for _, minifig, fig_quantity in self._get_minifigs(
+            for _, minifig, fig_quantity in self.generic_set_dao.get_minifigs(
                 _subset, quantity=_quantity, recursive=False
             ):
                 fig_parts.extend(

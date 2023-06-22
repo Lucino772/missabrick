@@ -1,4 +1,4 @@
-from flask import Flask, g
+from flask import Flask
 
 from app.cli.imports import data_cli
 from app.cli.user import user_cli
@@ -6,7 +6,8 @@ from app.controllers.explore import blueprint as explore_bp
 from app.controllers.login import blueprint as login_bp
 from app.controllers.report import blueprint as report_bp
 from app.extensions import compress, db, migrate, session
-from app.factories import teardown_service_factory
+from app.factories import teardown_dao_factory, teardown_service_factory
+from app.factory.dao import DaoFactory
 from app.factory.service import ServiceFactory
 from app.settings import Config
 
@@ -33,5 +34,9 @@ def create_app():
     # Service Factory
     app.service_factory_class = ServiceFactory
     app.teardown_appcontext(teardown_service_factory)
+
+    # Dao Factory
+    app.dao_factory_class = DaoFactory
+    app.teardown_appcontext(teardown_dao_factory)
 
     return app

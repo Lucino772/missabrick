@@ -3,20 +3,11 @@ import typing as t
 
 import pandas as pd
 
-from app.extensions import db
-from app.interfaces.factory.service import IServiceFactory
 from app.interfaces.services.report import IReportService
 from app.services.abstract import AbstractService
 
-if t.TYPE_CHECKING:
-    from sqlalchemy.orm import Session
-
 
 class ReportService(AbstractService, IReportService):
-    def __init__(self, factory: IServiceFactory) -> None:
-        super().__init__(factory)
-        self.session: "Session" = db.session
-
     def _find_first_key(
         self, possible_values: t.Iterable[str], search_list: t.Iterable[str]
     ):
