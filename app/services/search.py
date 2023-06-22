@@ -4,6 +4,7 @@ import typing as t
 import sqlalchemy as sa
 
 from app.extensions import db
+from app.factories import dao_factory
 from app.interfaces.factory.service import IServiceFactory
 from app.interfaces.services.search import ISearchService
 from app.models.orm.lego import GenericSet, Theme, Year
@@ -17,6 +18,8 @@ class SearchService(AbstractService, ISearchService):
     def __init__(self, factory: IServiceFactory) -> None:
         super().__init__(factory)
         self.session: "Session" = db.session
+        self.theme_dao = dao_factory.get_theme_dao()
+        self.year_dao = dao_factory.get_year_dao()
 
     def parse_query(self, query: str):
         keyword_regex = r'(\w+):(("(.*?)")|(\w+))'
@@ -74,7 +77,7 @@ class SearchService(AbstractService, ISearchService):
         return db.paginate(select, page=current_page, per_page=page_size)
 
     def get_years(self):
-        return self.session.execute(sa.select(Year.name)).scalars().all()
+        return [year.name for year in self.year_dao.all()]
 
     def get_themes(self):
-        return self.session.execute(sa.select(Theme.name)).scalars().all()
+        return [theme.name for theme in self.theme_dao.all()]
