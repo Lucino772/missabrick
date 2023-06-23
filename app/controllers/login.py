@@ -1,4 +1,4 @@
-from flask import Blueprint, flash, redirect, render_template, session, url_for
+from flask import Blueprint, flash, redirect, render_template, url_for
 
 from app.errors import (
     EmailVerificationError,
@@ -21,9 +21,10 @@ def signin():
     error = None
     if form.validate():
         try:
-            user_service = service_factory.get_user_service()
-            user_service.check_password(form.email.data, form.password.data)
-            session["authenticated"] = True
+            auth_service = service_factory.get_authentication_service()
+            auth_service.authenticate_with_login(
+                form.email.data, form.password.data
+            )
             return redirect(url_for("explore.index"))
         except InvalidEmailOrPassword:
             error = "The email or password is incorrect"
@@ -40,14 +41,16 @@ def signup():
     error = None
     if form.validate():
         try:
-            user_service = service_factory.get_user_service()
-            user_service.create_user(
+            account_service = service_factory.get_account_service()
+            auth_service = service_factory.get_authentication_service()
+
+            user = account_service.create_account(
                 username=form.username.data,
                 email=form.email.data,
                 password=form.password.data,
                 confirm=form.confirm.data,
             )
-            session["authenticated"] = True
+            auth_service.authenticate_with_login(user.email, user.password)
             return redirect(url_for("explore.index"))
         except PasswordDoesNotMatch:
             error = "The confirm password does not match the password"
@@ -59,9 +62,8 @@ def signup():
 
 @blueprint.route("/signout", methods=["GET"])
 def signout():
-    if session.get("authenticated", False) is True:
-        session["authenticated"] = False
-
+    auth_service = service_factory.get_authentication_service()
+    auth_service.deauthenticate()
     return redirect(url_for("explore.index"))
 
 
@@ -69,8 +71,8 @@ def signout():
 def verify_email(token: str):
     error = None
     try:
-        user_service = service_factory.get_user_service()
-        user_service.verify_email(token)
+        account_service = service_factory.get_account_service()
+        account_service.verify_account(token)
         flash("Your email was verified", category="info")
         return redirect(url_for("explore.index"))
     except EmailVerificationError as err:

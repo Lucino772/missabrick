@@ -1,39 +1,31 @@
 import datetime as dt
+import typing as t
 
 import itsdangerous
-from flask import current_app, url_for
+from flask import url_for
 
 from app.errors import (
     EmailVerificationError,
-    InvalidEmailOrPassword,
     PasswordDoesNotMatch,
     UserAlreadyExists,
 )
 from app.factories import dao_factory
 from app.interfaces.factory.service import IServiceFactory
-from app.interfaces.services.user import IUserService
+from app.interfaces.services.account import IAccountService
 from app.models.orm.login import User
 from app.services.abstract import AbstractService
 
 
-def _get_dangerous_serializer():
-    return itsdangerous.URLSafeTimedSerializer(
-        secret_key=current_app.config["SECRET_KEY"],
-        salt=current_app.config["SECURITY_PASSWORD_SALT"],
-    )
-
-
-class UserService(AbstractService, IUserService):
-    __slots__ = ("user_dao", "mail_srv")
-
+class AccountService(AbstractService, IAccountService):
     def __init__(self, factory: IServiceFactory) -> None:
         super().__init__(factory)
         self.user_dao = dao_factory.get_user_dao()
-        self.mail_srv = self.service_factory.get_mail_service()
+        self.signing_service = self.service_factory.get_signing_service()
+        self.mail_service = self.service_factory.get_mail_service()
 
-    def create_user(
+    def create_account(
         self, username: str, email: str, password: str, confirm: str
-    ):
+    ) -> User:
         if password != confirm:
             raise PasswordDoesNotMatch()
 
@@ -44,11 +36,11 @@ class UserService(AbstractService, IUserService):
         self.user_dao.save(user)
 
         # Send email confirmation link
-        token = _get_dangerous_serializer().dumps(user.email)
+        token = self.signing_service.urlsafe_dumps(user.email)
         verify_link = url_for(
             "login.verify_email", token=token, _external=True
         )
-        self.mail_srv.send(
+        self.mail_service.send(
             _from="noreply-missabrick@lucapalmi.com",
             to=user.email,
             subject="MissABrick - Verify your email",
@@ -57,14 +49,9 @@ class UserService(AbstractService, IUserService):
 
         return user
 
-    def check_password(self, email: str, password: str):
-        user = self.user_dao.get_by_email(email)
-        if user is None or user.password != password:
-            raise InvalidEmailOrPassword()
-
-    def verify_email(self, token: str, expiration: int = 3600):
+    def verify_account(self, token: str, expiration: int = 3600) -> None:
         try:
-            email = _get_dangerous_serializer().loads(
+            email = self.signing_service.urlsafe_loads(
                 token, max_age=expiration
             )
             user = self.user_dao.get_by_email(email)
