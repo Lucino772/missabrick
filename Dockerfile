@@ -20,6 +20,6 @@ COPY . /opt/app/
 
 # Load data
 RUN flask db upgrade
-RUN flask catalog load
+RUN flask data load
 
 CMD [ "/opt/app/start.sh" ]
