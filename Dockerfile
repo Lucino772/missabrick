@@ -21,5 +21,6 @@ COPY . /opt/app/
 # Load data
 RUN flask db upgrade
 RUN flask data load
+RUN flask user demo
 
 CMD [ "/opt/app/start.sh" ]

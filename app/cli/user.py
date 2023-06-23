@@ -1,4 +1,7 @@
+import datetime as dt
+
 import sqlalchemy as sa
+from flask import current_app
 from flask.cli import AppGroup, with_appcontext
 
 from app.extensions import db
@@ -12,3 +15,21 @@ user_cli = AppGroup("user")
 def clear_users():
     db.session.execute(sa.delete(User))
     db.session.commit()
+
+
+@user_cli.command("demo")
+@with_appcontext
+def create_demo_user():
+    if current_app.config["ENABLE_DEMO_ACCOUNT"]:
+        user = User(
+            username=current_app.config["DEMO_ACCOUNT_NAME"],
+            email=current_app.config["DEMO_ACCOUNT_EMAIL"],
+            password=current_app.config["DEMO_ACCOUNT_PASSWORD"],
+            email_verified=True,
+            email_verified_on=dt.datetime.now(),
+        )
+        db.session.add(user)
+        db.session.commit()
+        print("Added demo account")
+    else:
+        print("Demo account not enabled")
