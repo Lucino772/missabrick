@@ -20,3 +20,7 @@ def send_file(filename: str, source: str, type: str, fd: int = None):
     resp.headers["Content-Type"] = type
     resp.headers["filename"] = filename
     return resp
+
+
+def getenv(key: str, default=None, prefix: str = "MISSABRICK"):
+    return os.getenv(f"{prefix}_{key}", default)

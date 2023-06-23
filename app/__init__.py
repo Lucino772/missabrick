@@ -9,12 +9,12 @@ from app.extensions import compress, db, migrate, session
 from app.factories import teardown_dao_factory, teardown_service_factory
 from app.factory.dao import DaoFactory
 from app.factory.service import ServiceFactory
-from app.settings import Config
+from app.settings import get_config
 
 
 def create_app():
     app = Flask(__name__)
-    app.config.from_object(Config())
+    app.config.from_object(get_config())
 
     # Extensions
     db.init_app(app)
