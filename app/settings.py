@@ -12,7 +12,6 @@ if os.path.exists(dotenv_path):
 
 def get_config():
     environment = getenv("ENVIRONMENT", "default")
-    print("Loading env:", environment)
     if environment == "default":
         return DefaultConfig()
     elif environment == "demo":
