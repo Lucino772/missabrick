@@ -1,23 +1,14 @@
 from flask import Flask
 
-from app.catalog import blueprint as catalog_bp
-from app.catalog.services import (
-    colors_srv,
-    elements_srv,
-    inv_minifigs_srv,
-    inv_parts_srv,
-    inv_sets_srv,
-    inventories_srv,
-    minifigs_srv,
-    parts_cats_srv,
-    parts_rels_srv,
-    parts_srv,
-    sets_srv,
-    themes_srv,
-)
+from app.cli.imports import data_cli
+from app.cli.user import user_cli
+from app.controllers.explore import blueprint as explore_bp
+from app.controllers.login import blueprint as login_bp
+from app.controllers.report import blueprint as report_bp
 from app.extensions import compress, db, migrate, session
-from app.login import blueprint as login_bp
-from app.login.services import mail_srv, users_srv
+from app.factories import teardown_dao_factory, teardown_service_factory
+from app.factory.dao import DaoFactory
+from app.factory.service import ServiceFactory
 from app.settings import Config
 
 
@@ -31,24 +22,21 @@ def create_app():
     migrate.init_app(app, db)
     session.init_app(app)
 
-    # Services
-    users_srv.init_app(app, db)
-    mail_srv.init_app(app)
-
-    colors_srv.init_app(app, db)
-    elements_srv.init_app(app, db)
-    inventories_srv.init_app(app, db)
-    inv_minifigs_srv.init_app(app, db)
-    inv_parts_srv.init_app(app, db)
-    inv_sets_srv.init_app(app, db)
-    minifigs_srv.init_app(app, db)
-    parts_rels_srv.init_app(app, db)
-    parts_cats_srv.init_app(app, db)
-    parts_srv.init_app(app, db)
-    sets_srv.init_app(app, db)
-    themes_srv.init_app(app, db)
-
     # Blueprints
+    app.register_blueprint(explore_bp)
     app.register_blueprint(login_bp)
-    app.register_blueprint(catalog_bp)
+    app.register_blueprint(report_bp)
+
+    # CLI
+    app.cli.add_command(data_cli)
+    app.cli.add_command(user_cli)
+
+    # Service Factory
+    app.service_factory_class = ServiceFactory
+    app.teardown_appcontext(teardown_service_factory)
+
+    # Dao Factory
+    app.dao_factory_class = DaoFactory
+    app.teardown_appcontext(teardown_dao_factory)
+
     return app
