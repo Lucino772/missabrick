@@ -30,7 +30,13 @@ class DefaultConfig:
     SESSION_TYPE = "filesystem"
     SENDGRID_API_KEY = getenv("SENDGRID_API_KEY")
     ENABLE_DEMO_ACCOUNT = False
+    DEMO_ACCOUNT_NAME = None
+    DEMO_ACCOUNT_EMAIL = None
+    DEMO_ACCOUNT_PASSWORD = None
 
 
 class DemoConfig(DefaultConfig):
     ENABLE_DEMO_ACCOUNT = True
+    DEMO_ACCOUNT_NAME = "demo"
+    DEMO_ACCOUNT_EMAIL = "demo@missabrick.com"
+    DEMO_ACCOUNT_PASSWORD = "demo"

@@ -1,6 +1,7 @@
 import datetime as dt
 
 import sqlalchemy as sa
+from flask import current_app
 from flask.cli import AppGroup, with_appcontext
 
 from app.extensions import db
@@ -20,9 +21,9 @@ def clear_users():
 @with_appcontext
 def create_demo_user():
     user = User(
-        username="demo",
-        email="demo@missabrick.com",
-        password="demo",
+        username=current_app.config["DEMO_ACCOUNT_NAME"],
+        email=current_app.config["DEMO_ACCOUNT_EMAIL"],
+        password=current_app.config["DEMO_ACCOUNT_PASSWORD"],
         email_verified=True,
         email_verified_on=dt.datetime.now(),
     )
