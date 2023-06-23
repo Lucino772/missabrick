@@ -20,12 +20,16 @@ def clear_users():
 @user_cli.command("demo")
 @with_appcontext
 def create_demo_user():
-    user = User(
-        username=current_app.config["DEMO_ACCOUNT_NAME"],
-        email=current_app.config["DEMO_ACCOUNT_EMAIL"],
-        password=current_app.config["DEMO_ACCOUNT_PASSWORD"],
-        email_verified=True,
-        email_verified_on=dt.datetime.now(),
-    )
-    db.session.add(user)
-    db.session.commit()
+    if current_app.config["ENABLE_DEMO_ACCOUNT"]:
+        user = User(
+            username=current_app.config["DEMO_ACCOUNT_NAME"],
+            email=current_app.config["DEMO_ACCOUNT_EMAIL"],
+            password=current_app.config["DEMO_ACCOUNT_PASSWORD"],
+            email_verified=True,
+            email_verified_on=dt.datetime.now(),
+        )
+        db.session.add(user)
+        db.session.commit()
+        print("Added demo account")
+    else:
+        print("Demo account not enabled")
