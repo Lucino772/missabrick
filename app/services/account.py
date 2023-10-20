@@ -1,5 +1,4 @@
 import datetime as dt
-import typing as t
 
 import itsdangerous
 from flask import url_for
@@ -9,19 +8,16 @@ from app.errors import (
     PasswordDoesNotMatch,
     UserAlreadyExists,
 )
-from app.factories import dao_factory
-from app.interfaces.factory.service import IServiceFactory
+from app.factories import dao_factory, service_factory
 from app.interfaces.services.account import IAccountService
 from app.models.orm.login import User
-from app.services.abstract import AbstractService
 
 
-class AccountService(AbstractService, IAccountService):
-    def __init__(self, factory: IServiceFactory) -> None:
-        super().__init__(factory)
+class AccountService(IAccountService):
+    def __init__(self) -> None:
         self.user_dao = dao_factory.get_user_dao()
-        self.signing_service = self.service_factory.get_signing_service()
-        self.mail_service = self.service_factory.get_mail_service()
+        self.signing_service = service_factory.get_signing_service()
+        self.mail_service = service_factory.get_mail_service()
 
     def create_account(
         self, username: str, email: str, password: str, confirm: str

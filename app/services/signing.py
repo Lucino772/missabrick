@@ -2,19 +2,13 @@ import typing as t
 
 import itsdangerous
 
-from app.interfaces.factory.service import IServiceFactory
 from app.interfaces.services.signing import ISigningService
-from app.services.abstract import AbstractService
 
 
-class SigningService(AbstractService, ISigningService):
+class SigningService(ISigningService):
     def __init__(
-        self,
-        factory: IServiceFactory,
-        secret_key: t.Union[str, bytes],
-        salt: t.Union[str, bytes],
+        self, secret_key: t.Union[str, bytes], salt: t.Union[str, bytes]
     ) -> None:
-        super().__init__(factory)
         self._secret_key = secret_key
         self._salt = salt
 

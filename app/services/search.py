@@ -5,18 +5,15 @@ import sqlalchemy as sa
 
 from app.extensions import db
 from app.factories import dao_factory
-from app.interfaces.factory.service import IServiceFactory
 from app.interfaces.services.search import ISearchService
 from app.models.orm.lego import GenericSet, Theme, Year
-from app.services.abstract import AbstractService
 
 if t.TYPE_CHECKING:
     from sqlalchemy.orm import Session
 
 
-class SearchService(AbstractService, ISearchService):
-    def __init__(self, factory: IServiceFactory) -> None:
-        super().__init__(factory)
+class SearchService(ISearchService):
+    def __init__(self) -> None:
         self.session: "Session" = db.session
         self.theme_dao = dao_factory.get_theme_dao()
         self.year_dao = dao_factory.get_year_dao()
