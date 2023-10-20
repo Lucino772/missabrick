@@ -2,7 +2,7 @@
 <div class="alert alert-danger" role="alert">{{ error }}</div>
 {% endif %}
 
-<form class="{% if form.is_submitted() %}was-validated{% endif %}" method="post" action="">
+<form class="{% if form.is_submitted() %}was-validated{% endif %}" hx-post="" hx-target="body">
     {{ form.hidden_tag() }}
     <div class="input-icon mb-3">
         <span class="input-icon-addon">

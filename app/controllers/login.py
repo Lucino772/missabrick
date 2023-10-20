@@ -29,7 +29,7 @@ def signin():
         except InvalidEmailOrPassword:
             error = "The email or password is incorrect"
 
-    return render_template("signin.html", form=form, error=error), 422
+    return render_template("signin.html", form=form, error=error)
 
 
 @blueprint.route("/signup", methods=["POST", "GET"])
@@ -57,7 +57,7 @@ def signup():
         except UserAlreadyExists:
             error = "This email or username is already used"
 
-    return render_template("signup.html", form=form, error=error), 422
+    return render_template("signup.html", form=form, error=error)
 
 
 @blueprint.route("/signout", methods=["GET"])
