@@ -65,6 +65,6 @@
         </div>
     </div>
     <div id="search-result" hx-boost="true" hx-target="this">
-        {% include "partials/explore/results.html" %}
+        {{ render_partial("partials/explore/results.html", pagination=pagination, search=search) }}
     </div>
 </div>

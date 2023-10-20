@@ -19,7 +19,7 @@
 
         <div class="card-body">
             <div id="upload-result">
-                {% include "partials/report/results.html" %}
+                {{ render_partial("partials/report/results.html", parts=parts, fig_parts=fig_parts) }}
             </div>
         </div>
     </div>

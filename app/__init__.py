@@ -1,3 +1,4 @@
+import jinja_partials
 from flask import Flask
 
 from app.cli.imports import data_cli
@@ -15,6 +16,7 @@ from app.settings import get_config
 def create_app():
     app = Flask(__name__)
     app.config.from_object(get_config())
+    jinja_partials.register_extensions(app)
 
     # Extensions
     db.init_app(app)
