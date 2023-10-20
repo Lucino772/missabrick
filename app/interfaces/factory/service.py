@@ -1,10 +1,12 @@
 import typing as t
 
+from app.interfaces.services.account import IAccountService
+from app.interfaces.services.authentication import IAuthenticationService
 from app.interfaces.services.export import IExportService
 from app.interfaces.services.mail import IMailService
 from app.interfaces.services.report import IReportService
 from app.interfaces.services.search import ISearchService
-from app.interfaces.services.user import IUserService
+from app.interfaces.services.signing import ISigningService
 
 
 class IServiceFactory(t.Protocol):
@@ -20,5 +22,11 @@ class IServiceFactory(t.Protocol):
     def get_search_service(self) -> ISearchService:
         ...
 
-    def get_user_service(self) -> IUserService:
+    def get_authentication_service(self) -> IAuthenticationService:
+        ...
+
+    def get_account_service(self) -> IAccountService:
+        ...
+
+    def get_signing_service(self) -> ISigningService:
         ...
