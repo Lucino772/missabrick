@@ -21,6 +21,7 @@ class AuthenticationService(AbstractService, IAuthenticationService):
             raise InvalidEmailOrPassword()
 
         session["user_id"] = user.id
+        session["authenticated"] = True
 
     def get_current_user(self) -> User:
         user_id = session.get("user_id", None)
@@ -32,3 +33,4 @@ class AuthenticationService(AbstractService, IAuthenticationService):
     def deauthenticate(self) -> None:
         if "user_id" in session:
             session.pop("user_id")
+            session.pop("authenticated")
