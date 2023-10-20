@@ -7,7 +7,7 @@ from app.extensions import db
 from app.models.orm.lego import GenericSet, Theme, Year
 
 if t.TYPE_CHECKING:
-    from sqlalchemy.orm import Session
+    from sqlalchemy.orm import scoped_session
 
     from app.interfaces.daos.theme import IThemeDao
     from app.interfaces.daos.year import IYearDao
@@ -15,9 +15,13 @@ if t.TYPE_CHECKING:
 
 class SearchService:
     def __init__(
-        self, *, theme_dao: "IThemeDao", year_dao: "IYearDao"
+        self,
+        *,
+        db_session: "scoped_session",
+        theme_dao: "IThemeDao",
+        year_dao: "IYearDao"
     ) -> None:
-        self.session: "Session" = db.session
+        self.session = db_session
         self.theme_dao = theme_dao
         self.year_dao = year_dao
 
