@@ -1,0 +1,70 @@
+<div class="container">
+    <div id="search-form">
+        <form action="/explore" method="get"
+            hx-boost="true"
+            hx-trigger="keyup delay:500ms, change, search"
+            hx-target="#search-result">
+
+            <div class="row g-2">
+                <div class="col-auto d-flex justify-content-center align-items-center">
+                    <span class="form-help" data-bs-toggle="modal" data-bs-target="#infoModal">?</span>
+                </div>
+                <div class="col">
+                    <div class="input-icon">
+                        <input type="text" name="search" class="form-control" placeholder="You can filter by theme, year, name or id (e.g. theme:&quot;System&quot;, name:&quot;X-Wing&quot;)">
+
+                        <span class="input-icon-addon">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="icon" width="24" height="24"
+                                viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none"
+                                stroke-linecap="round" stroke-linejoin="round">
+                                <path stroke="none" d="M0 0h24v24H0z" fill="none" />
+                                <circle cx="10" cy="10" r="7" />
+                                <line x1="21" y1="21" x2="15" y2="15" />
+                            </svg>
+                        </span>
+                    </div>
+                </div>
+                <div class="col-auto">
+                    <select name="page_size" class="form-select">
+                        <option value="10" selected>10</option>
+                        <option value="25">25</option>
+                        <option value="50">50</option>
+                    </select>
+                </div>
+            </div>
+        </form>
+
+        <!-- Info Modal -->
+        <div class="modal" id="infoModal" tabindex="-1">
+            <div class="modal-dialog modal-fullscreen" role="document">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title">Help</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body">
+                        <div class="container-fluid mb-3">
+                            <p>Years</p>
+                            <div class="d-flex flex-row flex-wrap align-items-stretch gap-1">
+                            {% for year in years %}
+                                <span class="badge rounded-pill text-bg-secondary">{{ year }}</span>
+                            {% endfor %}
+                            </div>
+                        </div>
+                        <div class="container-fluid mb-3">
+                            <p>Themes</p>
+                            <div class="d-flex flex-row flex-wrap align-items-stretch gap-1">
+                            {% for theme in themes %}
+                                <span class="badge rounded-pill text-bg-secondary">{{ theme }}</span>
+                            {% endfor %}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div id="search-result" hx-boost="true" hx-target="this">
+        {% include "partials/explore/results.html" %}
+    </div>
+</div>

@@ -20,9 +20,20 @@ def index():
     years = search_service.get_years()
 
     if htmx:
-        return render_template(
-            "partials/search_results.html", search=query, pagination=results
-        )
+        if htmx.target == "search-result":
+            return render_template(
+                "partials/explore/results.html",
+                search=query,
+                pagination=results,
+            )
+        elif htmx.target == "content":
+            return render_template(
+                "partials/explore/index.html",
+                search=query,
+                pagination=results,
+                themes=themes,
+                years=years,
+            )
 
     return render_template(
         "explore.html",
