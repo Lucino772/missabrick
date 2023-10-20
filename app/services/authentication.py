@@ -1,13 +1,17 @@
+import typing as t
+
 from flask import session
 
 from app.errors import InvalidEmailOrPassword
-from app.factories import dao_factory
 from app.models.orm.login import User
+
+if t.TYPE_CHECKING:
+    from app.interfaces.daos.user import IUserDao
 
 
 class AuthenticationService:
-    def __init__(self) -> None:
-        self.user_dao = dao_factory.get_user_dao()
+    def __init__(self, *, user_dao: "IUserDao") -> None:
+        self.user_dao = user_dao
 
     def authenticate_with_login(self, email: str, password: str) -> None:
         user = self.user_dao.get_by_email(email)

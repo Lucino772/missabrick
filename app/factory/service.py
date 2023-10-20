@@ -1,5 +1,6 @@
 from flask import current_app
 
+from app.factories import dao_factory
 from app.services.account import AccountService
 from app.services.authentication import AuthenticationService
 from app.services.export import ExportService
@@ -11,7 +12,7 @@ from app.services.signing import SigningService
 
 class ServiceFactory:
     def get_export_service(self):
-        return ExportService()
+        return ExportService(generic_set_dao=dao_factory.get_generic_set_dao())
 
     def get_mail_service(self):
         return MailService()
@@ -20,13 +21,20 @@ class ServiceFactory:
         return ReportService()
 
     def get_search_service(self):
-        return SearchService()
+        return SearchService(
+            theme_dao=dao_factory.get_theme_dao(),
+            year_dao=dao_factory.get_year_dao(),
+        )
 
     def get_authentication_service(self):
-        return AuthenticationService()
+        return AuthenticationService(user_dao=dao_factory.get_user_dao())
 
     def get_account_service(self):
-        return AccountService()
+        return AccountService(
+            user_dao=dao_factory.get_user_dao(),
+            signing_service=self.get_signing_service(),
+            mail_service=self.get_mail_service(),
+        )
 
     def get_signing_service(self):
         return SigningService(

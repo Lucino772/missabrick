@@ -5,17 +5,18 @@ import pandas as pd
 
 from app.errors import SetDoesNotExists
 from app.extensions import db
-from app.factories import dao_factory
 from app.models.orm.lego import GenericSet, GenericSetPart
 
 if t.TYPE_CHECKING:
     from sqlalchemy.orm import Session
 
+    from app.interfaces.daos.generic_set import IGenericSetDao
+
 
 class ExportService:
-    def __init__(self) -> None:
+    def __init__(self, *, generic_set_dao: "IGenericSetDao") -> None:
         self.session: "Session" = db.session
-        self.generic_set_dao = dao_factory.get_generic_set_dao()
+        self.generic_set_dao = generic_set_dao
 
     def _format_parts(
         self,
