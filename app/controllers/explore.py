@@ -1,5 +1,6 @@
 from flask import Blueprint, render_template, request
 
+from app.extensions import htmx
 from app.factories import service_factory
 from app.utils import send_file
 
@@ -17,6 +18,11 @@ def index():
     results = search_service.search(search, keywords, page, page_size)
     themes = search_service.get_themes()
     years = search_service.get_years()
+
+    if htmx:
+        return render_template(
+            "partials/search_results.html", search=query, pagination=results
+        )
 
     return render_template(
         "explore.html",
