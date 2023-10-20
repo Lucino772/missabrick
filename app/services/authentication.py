@@ -2,11 +2,10 @@ from flask import session
 
 from app.errors import InvalidEmailOrPassword
 from app.factories import dao_factory
-from app.interfaces.services.authentication import IAuthenticationService
 from app.models.orm.login import User
 
 
-class AuthenticationService(IAuthenticationService):
+class AuthenticationService:
     def __init__(self) -> None:
         self.user_dao = dao_factory.get_user_dao()
 

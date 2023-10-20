@@ -2,10 +2,8 @@ import sendgrid
 from flask import current_app
 from sendgrid.helpers.mail import Content, Email, Mail, To
 
-from app.interfaces.services.mail import IMailService
 
-
-class MailService(IMailService):
+class MailService:
     def send(self, _from: str, to: str, subject: str, content: str):
         sg = sendgrid.SendGridAPIClient(
             api_key=current_app.config["SENDGRID_API_KEY"]

@@ -2,10 +2,8 @@ import typing as t
 
 import itsdangerous
 
-from app.interfaces.services.signing import ISigningService
 
-
-class SigningService(ISigningService):
+class SigningService:
     def __init__(
         self, secret_key: t.Union[str, bytes], salt: t.Union[str, bytes]
     ) -> None:

@@ -3,10 +3,8 @@ import typing as t
 
 import pandas as pd
 
-from app.interfaces.services.report import IReportService
 
-
-class ReportService(IReportService):
+class ReportService:
     def _find_first_key(
         self, possible_values: t.Iterable[str], search_list: t.Iterable[str]
     ):

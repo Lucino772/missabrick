@@ -9,11 +9,10 @@ from app.errors import (
     UserAlreadyExists,
 )
 from app.factories import dao_factory, service_factory
-from app.interfaces.services.account import IAccountService
 from app.models.orm.login import User
 
 
-class AccountService(IAccountService):
+class AccountService:
     def __init__(self) -> None:
         self.user_dao = dao_factory.get_user_dao()
         self.signing_service = service_factory.get_signing_service()
