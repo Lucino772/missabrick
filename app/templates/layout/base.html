@@ -10,7 +10,7 @@
     <link rel="stylesheet" href="{{url_for('static', filename='css/tabler.min.css')}}">
     <script src="{{url_for('static', filename='js/tabler.min.js')}}"></script>
     <script src="{{url_for('static', filename='js/debounce.js')}}"></script>
-    <script src="{{url_for('static', filename='js/turbo.min.js')}}"></script>
+    <script src="{{url_for('static', filename='js/htmx.min.js')}}"></script>
 </head>
 
 <body>
@@ -41,10 +41,10 @@
             {% endfor %}
         {% endif %}
     {% endwith %}
-    <nav class="navbar navbar-expand-lg bg-body-tertiary">
+    <nav class="navbar navbar-expand-lg bg-body-tertiary" hx-boost="true">
         <div class="container">
-            <div class="navbar-nav">
-                <a href="/explore" class="nav-link" data-turbo-frame="content">
+            <div class="navbar-nav" hx-target="#content">
+                <a href="/explore" class="nav-link">
                     <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-search" width="24"
                         height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none"
                         stroke-linecap="round" stroke-linejoin="round">
@@ -55,7 +55,7 @@
                     Explore
                 </a>
                 {% if session.get("authenticated", false) is true %}
-                <a href="/" class="nav-link" data-turbo-frame="content">
+                <a href="/" class="nav-link">
                     <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-home" width="24"
                         height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none"
                         stroke-linecap="round" stroke-linejoin="round">
@@ -66,7 +66,7 @@
                     </svg>
                     Dashboard
                 </a>
-                <a href="/collections" class="nav-link" data-turbo-frame="content">
+                <a href="/collections" class="nav-link">
                     <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-archive" width="24"
                         height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none"
                         stroke-linecap="round" stroke-linejoin="round">
@@ -79,7 +79,7 @@
                     Collections
                 </a>
                 {% endif %}
-                <a href="/report" class="nav-link" data-turbo-frame="content">
+                <a href="/report" class="nav-link">
                     <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-report-analytics"
                         width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none"
                         stroke-linecap="round" stroke-linejoin="round">
@@ -94,7 +94,7 @@
                     Report
                 </a>
             </div>
-            <div class="navbar-nav">
+            <div class="navbar-nav" hx-target="body">
                 {% if session.get("authenticated", false) is false %}
                 <a href="{{ url_for('login.signin') }}" class="nav-link">
                     <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-login" width="24"
@@ -137,7 +137,7 @@
         </div>
     </nav>
 
-    <turbo-frame id="content" data-turbo-action="advance">
+    <div id="content">
         {% block content %}{% endblock %}
-    </turbo-frame>
+    </div>
 </body>

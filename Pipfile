@@ -18,6 +18,8 @@ flask-migrate = "*"
 flask-session = "*"
 itsdangerous = "*"
 sendgrid = "*"
+flask-htmx = "*"
+jinja-partials = "*"
 
 [dev-packages]
 nox = "*"

@@ -4,6 +4,7 @@ import pandas as pd
 from flask import Blueprint, abort, render_template
 from werkzeug.datastructures import FileStorage
 
+from app.extensions import htmx
 from app.factories import service_factory
 from app.forms.report import UploadForm
 
@@ -51,6 +52,14 @@ def generate():
             parts_df, minifigs_parts_df, elements_df
         )
 
+        if htmx and htmx.target == "upload-result":
+            return render_template(
+                "partials/report/results.html",
+                parts=set_report["parts"],
+                fig_parts=set_report["fig_parts"],
+                form=form,
+            )
+
         return render_template(
             "report.html",
             parts=set_report["parts"],
@@ -58,6 +67,11 @@ def generate():
             form=form,
         )
     else:
+        if htmx and htmx.target == "content":
+            return render_template(
+                "partials/report/index.html", parts=[], fig_parts=[], form=form
+            )
+
         return render_template(
             "report.html", parts=[], fig_parts=[], form=form
         )

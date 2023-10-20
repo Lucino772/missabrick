@@ -1,0 +1,26 @@
+<div class="container">
+    <div class="card">
+        <div class="mb-3">
+            <form hx-encoding="multipart/form-data" hx-post="/report" hx-trigger="change" hx-target="#upload-result">
+                {{ form.hidden_tag() }}
+                {{ form.file(class="form-control") }}
+            </form>
+            <div class="card-header">
+                <ul class="nav nav-tabs card-header-tabs" data-bs-toggle="tabs">
+                    <li class="nav-item">
+                        <a href="#tabs-parts" class="nav-link active" data-bs-toggle="tab">Parts</a>
+                    </li>
+                    <li class="nav-item">
+                        <a href="#tabs-minifigs-parts" class="nav-link" data-bs-toggle="tab">Minifigs</a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="card-body">
+            <div id="upload-result">
+                {{ render_partial("partials/report/results.html", parts=parts, fig_parts=fig_parts) }}
+            </div>
+        </div>
+    </div>
+</div>

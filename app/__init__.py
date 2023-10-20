@@ -1,3 +1,4 @@
+import jinja_partials
 from flask import Flask
 
 from app.cli.imports import data_cli
@@ -5,7 +6,7 @@ from app.cli.user import user_cli
 from app.controllers.explore import blueprint as explore_bp
 from app.controllers.login import blueprint as login_bp
 from app.controllers.report import blueprint as report_bp
-from app.extensions import compress, db, migrate, session
+from app.extensions import compress, db, htmx, migrate, session
 from app.factories import teardown_dao_factory, teardown_service_factory
 from app.factory.dao import DaoFactory
 from app.factory.service import ServiceFactory
@@ -15,9 +16,11 @@ from app.settings import get_config
 def create_app():
     app = Flask(__name__)
     app.config.from_object(get_config())
+    jinja_partials.register_extensions(app)
 
     # Extensions
     db.init_app(app)
+    htmx.init_app(app)
     compress.init_app(app)
     migrate.init_app(app, db)
     session.init_app(app)
