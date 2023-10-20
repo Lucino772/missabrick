@@ -18,6 +18,7 @@ flask-migrate = "*"
 flask-session = "*"
 itsdangerous = "*"
 sendgrid = "*"
+flask-htmx = "*"
 
 [dev-packages]
 nox = "*"
