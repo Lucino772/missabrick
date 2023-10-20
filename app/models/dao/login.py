@@ -2,22 +2,14 @@ import typing as t
 
 import sqlalchemy as sa
 
-from app.extensions import db
-from app.interfaces.daos.user import IUserDao
 from app.models.dao.base import BaseDao
 from app.models.orm.login import User
-
-if t.TYPE_CHECKING:
-    from sqlalchemy.orm import scoped_session
-
 
 _sentinel = object()
 
 
-class UserDao(BaseDao[User, int], IUserDao):
-    def __init__(self, model: t.Type[User]) -> None:
-        super().__init__(model)
-        self.session: "scoped_session" = db.session
+class UserDao(BaseDao[User, int]):
+    model = User
 
     def exists(
         self, email: str = _sentinel, username: str = _sentinel

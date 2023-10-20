@@ -1,14 +1,5 @@
 import typing as t
 
-from app.interfaces.daos.color import IColorDao
-from app.interfaces.daos.element import IElementDao
-from app.interfaces.daos.generic_set import IGenericSetDao
-from app.interfaces.daos.generic_set_part import IGenericSetPartDao
-from app.interfaces.daos.generic_set_rel import IGenericSetRelationshipDao
-from app.interfaces.daos.part import IPartDao
-from app.interfaces.daos.part_category import IPartCategoryDao
-from app.interfaces.daos.theme import IThemeDao
-from app.interfaces.daos.year import IYearDao
 from app.models.dao.base import BaseDao
 from app.models.orm.lego import (
     Color,
@@ -23,42 +14,43 @@ from app.models.orm.lego import (
 )
 
 
-class ColorDao(BaseDao[Color, int], IColorDao):
-    ...
+class ColorDao(BaseDao[Color, int]):
+    model = Color
 
 
-class ElementDao(BaseDao[Element, int], IElementDao):
-    ...
+class ElementDao(BaseDao[Element, int]):
+    model = Element
 
 
-class GenericSetPartDao(BaseDao[GenericSetPart, int], IGenericSetPartDao):
-    ...
+class GenericSetPartDao(BaseDao[GenericSetPart, int]):
+    model = GenericSetPart
 
 
 class GenericSetRelationshipDao(
-    BaseDao[GenericSetRelationship, t.Tuple[str, str]],
-    IGenericSetRelationshipDao,
+    BaseDao[GenericSetRelationship, t.Tuple[str, str]]
 ):
-    ...
+    model = GenericSetRelationship
 
 
-class PartDao(BaseDao[Part, str], IPartDao):
-    ...
+class PartDao(BaseDao[Part, str]):
+    model = Part
 
 
-class PartCategoryDao(BaseDao[PartCategory, int], IPartCategoryDao):
-    ...
+class PartCategoryDao(BaseDao[PartCategory, int]):
+    model = PartCategory
 
 
-class ThemeDao(BaseDao[Theme, int], IThemeDao):
-    ...
+class ThemeDao(BaseDao[Theme, int]):
+    model = Theme
 
 
-class YearDao(BaseDao[Year, int], IYearDao):
-    ...
+class YearDao(BaseDao[Year, int]):
+    model = Year
 
 
-class GenericSetDao(BaseDao[GenericSet, str], IGenericSetDao):
+class GenericSetDao(BaseDao[GenericSet, str]):
+    model = GenericSet
+
     def get_subsets(
         self, _set: "GenericSet", quantity: int = 1, recursive: bool = True
     ):
