@@ -1,14 +1,15 @@
 import typing as t
 
 import itsdangerous
+from flask import Config
+from injector import inject
 
 
+@inject
 class SigningService:
-    def __init__(
-        self, secret_key: t.Union[str, bytes], salt: t.Union[str, bytes]
-    ) -> None:
-        self._secret_key = secret_key
-        self._salt = salt
+    def __init__(self, config: Config) -> None:
+        self._secret_key = config["SECRET_KEY"]
+        self._salt = config["SECURITY_PASSWORD_SALT"]
 
     def _get_urlsafe_serializer(self):
         return itsdangerous.URLSafeTimedSerializer(

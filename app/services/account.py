@@ -3,24 +3,23 @@ import typing as t
 
 import itsdangerous
 from flask import url_for
+from injector import inject
 
 from app.errors import (
     EmailVerificationError,
     PasswordDoesNotMatch,
     UserAlreadyExists,
 )
+from app.interfaces.daos.user import IUserDao
+from app.interfaces.services.mail import IMailService
+from app.interfaces.services.signing import ISigningService
 from app.models.orm.login import User
 
-if t.TYPE_CHECKING:
-    from app.interfaces.daos.user import IUserDao
-    from app.interfaces.services.mail import IMailService
-    from app.interfaces.services.signing import ISigningService
 
-
+@inject
 class AccountService:
     def __init__(
         self,
-        *,
         user_dao: "IUserDao",
         signing_service: "ISigningService",
         mail_service: "IMailService",
