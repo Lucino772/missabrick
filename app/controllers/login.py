@@ -6,14 +6,15 @@ from app.errors import (
     PasswordDoesNotMatch,
     UserAlreadyExists,
 )
-from app.factories import service_factory
 from app.forms.login import SignInForm, SignUpForm
+from app.interfaces.services.account import IAccountService
+from app.interfaces.services.authentication import IAuthenticationService
 
 blueprint = Blueprint("login", __name__, url_prefix="/auth")
 
 
 @blueprint.route("/signin", methods=["POST", "GET"])
-def signin():
+def signin(auth_service: "IAuthenticationService"):
     form = SignInForm()
     if not form.is_submitted():
         return render_template("signin.html", form=form, error=None)
@@ -21,7 +22,6 @@ def signin():
     error = None
     if form.validate():
         try:
-            auth_service = service_factory.get_authentication_service()
             auth_service.authenticate_with_login(
                 form.email.data, form.password.data
             )
@@ -33,7 +33,9 @@ def signin():
 
 
 @blueprint.route("/signup", methods=["POST", "GET"])
-def signup():
+def signup(
+    account_service: "IAccountService", auth_service: "IAuthenticationService"
+):
     form = SignUpForm()
     if not form.is_submitted():
         return render_template("signup.html", form=form, error=None)
@@ -41,9 +43,6 @@ def signup():
     error = None
     if form.validate():
         try:
-            account_service = service_factory.get_account_service()
-            auth_service = service_factory.get_authentication_service()
-
             user = account_service.create_account(
                 username=form.username.data,
                 email=form.email.data,
@@ -61,17 +60,15 @@ def signup():
 
 
 @blueprint.route("/signout", methods=["GET"])
-def signout():
-    auth_service = service_factory.get_authentication_service()
+def signout(auth_service: "IAuthenticationService"):
     auth_service.deauthenticate()
     return redirect(url_for("explore.index"))
 
 
 @blueprint.route("/confirm/<string:token>")
-def verify_email(token: str):
+def verify_email(token: str, account_service: "IAccountService"):
     error = None
     try:
-        account_service = service_factory.get_account_service()
         account_service.verify_account(token)
         flash("Your email was verified", category="info")
         return redirect(url_for("explore.index"))

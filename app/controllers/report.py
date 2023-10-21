@@ -5,8 +5,8 @@ from flask import Blueprint, abort, render_template
 from werkzeug.datastructures import FileStorage
 
 from app.extensions import htmx
-from app.factories import service_factory
 from app.forms.report import UploadForm
+from app.interfaces.services.report import IReportService
 
 blueprint = Blueprint("report", __name__, url_prefix="/report")
 
@@ -28,7 +28,7 @@ def _read_uploaded_set_excel_file(file: FileStorage):
 
 
 @blueprint.route("/", methods=["GET", "POST"])
-def generate():
+def generate(report_service: "IReportService"):
     form = UploadForm()
     if form.validate_on_submit():
         (
@@ -47,7 +47,6 @@ def generate():
             abort(400)
 
         # Generate report
-        report_service = service_factory.get_report_service()
         set_report = report_service.generate_report(
             parts_df, minifigs_parts_df, elements_df
         )
