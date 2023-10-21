@@ -1,5 +1,7 @@
 import typing as t
 
+from injector import inject
+
 from app.models.dao.base import BaseDao
 from app.models.orm.lego import (
     Color,
@@ -14,40 +16,49 @@ from app.models.orm.lego import (
 )
 
 
+@inject
 class ColorDao(BaseDao[Color, int]):
     model = Color
 
 
+@inject
 class ElementDao(BaseDao[Element, int]):
     model = Element
 
 
+@inject
 class GenericSetPartDao(BaseDao[GenericSetPart, int]):
     model = GenericSetPart
 
 
+@inject
 class GenericSetRelationshipDao(
     BaseDao[GenericSetRelationship, t.Tuple[str, str]]
 ):
     model = GenericSetRelationship
 
 
+@inject
 class PartDao(BaseDao[Part, str]):
     model = Part
 
 
+@inject
 class PartCategoryDao(BaseDao[PartCategory, int]):
     model = PartCategory
 
 
+@inject
 class ThemeDao(BaseDao[Theme, int]):
     model = Theme
 
 
+@inject
 class YearDao(BaseDao[Year, int]):
     model = Year
 
 
+@inject
 class GenericSetDao(BaseDao[GenericSet, str]):
     model = GenericSet
 

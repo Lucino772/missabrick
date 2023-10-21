@@ -1,6 +1,7 @@
 import typing as t
 
 import sqlalchemy as sa
+from injector import inject
 
 from app.models.dao.base import BaseDao
 from app.models.orm.login import User
@@ -8,6 +9,7 @@ from app.models.orm.login import User
 _sentinel = object()
 
 
+@inject
 class UserDao(BaseDao[User, int]):
     model = User
 
