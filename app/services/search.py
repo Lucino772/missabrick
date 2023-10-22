@@ -2,24 +2,26 @@ import re
 import typing as t
 
 import sqlalchemy as sa
+from injector import inject
+from sqlalchemy.orm import scoped_session
 
 from app.extensions import db
-from app.factories import dao_factory
-from app.interfaces.factory.service import IServiceFactory
-from app.interfaces.services.search import ISearchService
+from app.interfaces.daos.theme import IThemeDao
+from app.interfaces.daos.year import IYearDao
 from app.models.orm.lego import GenericSet, Theme, Year
-from app.services.abstract import AbstractService
-
-if t.TYPE_CHECKING:
-    from sqlalchemy.orm import Session
 
 
-class SearchService(AbstractService, ISearchService):
-    def __init__(self, factory: IServiceFactory) -> None:
-        super().__init__(factory)
-        self.session: "Session" = db.session
-        self.theme_dao = dao_factory.get_theme_dao()
-        self.year_dao = dao_factory.get_year_dao()
+@inject
+class SearchService:
+    def __init__(
+        self,
+        db_session: scoped_session,
+        theme_dao: IThemeDao,
+        year_dao: IYearDao,
+    ) -> None:
+        self.session = db_session
+        self.theme_dao = theme_dao
+        self.year_dao = year_dao
 
     def parse_query(self, query: str):
         keyword_regex = r'(\w+):(("(.*?)")|(\w+))'

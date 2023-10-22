@@ -3,25 +3,30 @@ import typing as t
 
 import itsdangerous
 from flask import url_for
+from injector import inject
 
 from app.errors import (
     EmailVerificationError,
     PasswordDoesNotMatch,
     UserAlreadyExists,
 )
-from app.factories import dao_factory
-from app.interfaces.factory.service import IServiceFactory
-from app.interfaces.services.account import IAccountService
+from app.interfaces.daos.user import IUserDao
+from app.interfaces.services.mail import IMailService
+from app.interfaces.services.signing import ISigningService
 from app.models.orm.login import User
-from app.services.abstract import AbstractService
 
 
-class AccountService(AbstractService, IAccountService):
-    def __init__(self, factory: IServiceFactory) -> None:
-        super().__init__(factory)
-        self.user_dao = dao_factory.get_user_dao()
-        self.signing_service = self.service_factory.get_signing_service()
-        self.mail_service = self.service_factory.get_mail_service()
+@inject
+class AccountService:
+    def __init__(
+        self,
+        user_dao: "IUserDao",
+        signing_service: "ISigningService",
+        mail_service: "IMailService",
+    ) -> None:
+        self.user_dao = user_dao
+        self.signing_service = signing_service
+        self.mail_service = mail_service
 
     def create_account(
         self, username: str, email: str, password: str, confirm: str

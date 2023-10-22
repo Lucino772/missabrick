@@ -1,21 +1,19 @@
 import typing as t
 
 import sqlalchemy as sa
-
-from app.extensions import db
-from app.interfaces.daos.dao import Dao
-
-if t.TYPE_CHECKING:
-    from sqlalchemy.orm import scoped_session
+from injector import inject
+from sqlalchemy.orm import scoped_session
 
 Model_T = t.TypeVar("Model_T")
 ModelKey_T = t.TypeVar("ModelKey_T")
 
 
-class BaseDao(Dao[Model_T, ModelKey_T]):
-    def __init__(self, model: t.Type[Model_T]) -> None:
-        self.model = model
-        self.session: "scoped_session" = db.session
+@inject
+class BaseDao(t.Generic[Model_T, ModelKey_T]):
+    model: t.ClassVar[t.Type[Model_T]] = None
+
+    def __init__(self, db_session: "scoped_session") -> None:
+        self.session = db_session
 
     def all(self):
         return self.session.execute(sa.select(self.model)).scalars().all()

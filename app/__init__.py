@@ -1,5 +1,6 @@
 import jinja_partials
 from flask import Flask
+from flask_injector import FlaskInjector
 
 from app.cli.imports import data_cli
 from app.cli.user import user_cli
@@ -7,9 +8,9 @@ from app.controllers.explore import blueprint as explore_bp
 from app.controllers.login import blueprint as login_bp
 from app.controllers.report import blueprint as report_bp
 from app.extensions import compress, db, htmx, migrate, session
-from app.factories import teardown_dao_factory, teardown_service_factory
-from app.factory.dao import DaoFactory
-from app.factory.service import ServiceFactory
+from app.inject.dao import DAOModule
+from app.inject.database import DBModule
+from app.inject.service import ServiceModule
 from app.settings import get_config
 
 
@@ -34,12 +35,9 @@ def create_app():
     app.cli.add_command(data_cli)
     app.cli.add_command(user_cli)
 
-    # Service Factory
-    app.service_factory_class = ServiceFactory
-    app.teardown_appcontext(teardown_service_factory)
-
-    # Dao Factory
-    app.dao_factory_class = DaoFactory
-    app.teardown_appcontext(teardown_dao_factory)
-
+    # Dependency Injection
+    FlaskInjector(
+        app=app,
+        modules=[DBModule(app, db), DAOModule(app), ServiceModule(app)],
+    )
     return app

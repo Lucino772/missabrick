@@ -20,6 +20,8 @@ itsdangerous = "*"
 sendgrid = "*"
 flask-htmx = "*"
 jinja-partials = "*"
+injector = "*"
+flask-injector = "*"
 
 [dev-packages]
 nox = "*"

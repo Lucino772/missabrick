@@ -2,24 +2,21 @@ import tempfile
 import typing as t
 
 import pandas as pd
+from injector import inject
+from sqlalchemy.orm import scoped_session
 
 from app.errors import SetDoesNotExists
-from app.extensions import db
-from app.factories import dao_factory
-from app.interfaces.factory.service import IServiceFactory
-from app.interfaces.services.export import IExportService
+from app.interfaces.daos.generic_set import IGenericSetDao
 from app.models.orm.lego import GenericSet, GenericSetPart
-from app.services.abstract import AbstractService
-
-if t.TYPE_CHECKING:
-    from sqlalchemy.orm import Session
 
 
-class ExportService(AbstractService, IExportService):
-    def __init__(self, factory: IServiceFactory) -> None:
-        super().__init__(factory)
-        self.session: "Session" = db.session
-        self.generic_set_dao = dao_factory.get_generic_set_dao()
+@inject
+class ExportService:
+    def __init__(
+        self, db_session: "scoped_session", generic_set_dao: "IGenericSetDao"
+    ) -> None:
+        self.session = db_session
+        self.generic_set_dao = generic_set_dao
 
     def _format_parts(
         self,
