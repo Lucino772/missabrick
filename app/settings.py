@@ -34,6 +34,11 @@ class DefaultConfig:
     DEMO_ACCOUNT_EMAIL = None
     DEMO_ACCOUNT_PASSWORD = None
 
+    CELERY = dict(
+        broker_url="redis://localhost:6379",
+        result_backend="redis://localhost:6379",
+    )
+
 
 class DemoConfig(DefaultConfig):
     ENABLE_DEMO_ACCOUNT = True

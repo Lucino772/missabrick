@@ -1,4 +1,5 @@
 import jinja_partials
+from celery import Celery
 from flask import Flask
 from flask_injector import FlaskInjector
 
@@ -14,6 +15,14 @@ from app.inject.service import ServiceModule
 from app.settings import get_config
 
 
+def _init_celery(app: Flask):
+    celery_app = Celery(app.name)
+    celery_app.config_from_object(app.config["CELERY"])
+    celery_app.set_default()
+    app.extensions["celery"] = celery_app
+    return celery_app
+
+
 def create_app():
     app = Flask(__name__)
     app.config.from_object(get_config())
@@ -25,6 +34,9 @@ def create_app():
     compress.init_app(app)
     migrate.init_app(app, db)
     session.init_app(app)
+
+    # Celery
+    _init_celery(app)
 
     # Blueprints
     app.register_blueprint(explore_bp)
