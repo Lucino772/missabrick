@@ -8,7 +8,7 @@ from app.cli.user import user_cli
 from app.controllers.explore import blueprint as explore_bp
 from app.controllers.login import blueprint as login_bp
 from app.controllers.report import blueprint as report_bp
-from app.extensions import compress, db, htmx, migrate, session
+from app.extensions import db, htmx, migrate, session
 from app.inject.dao import DAOModule
 from app.inject.database import DBModule
 from app.inject.service import ServiceModule
@@ -31,7 +31,6 @@ def create_app():
     # Extensions
     db.init_app(app)
     htmx.init_app(app)
-    compress.init_app(app)
     migrate.init_app(app, db)
     session.init_app(app)
 
