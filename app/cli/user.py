@@ -21,15 +21,29 @@ def clear_users():
 @with_appcontext
 def create_demo_user():
     if current_app.config["ENABLE_DEMO_ACCOUNT"]:
-        user = User(
-            username=current_app.config["DEMO_ACCOUNT_NAME"],
-            email=current_app.config["DEMO_ACCOUNT_EMAIL"],
-            password=current_app.config["DEMO_ACCOUNT_PASSWORD"],
-            email_verified=True,
-            email_verified_on=dt.datetime.now(),
+        user_exists = (
+            db.session.execute(
+                sa.select(User).where(
+                    User.email == current_app.config["DEMO_ACCOUNT_EMAIL"]
+                )
+            )
+            .scalars()
+            .first()
+            is not None
         )
-        db.session.add(user)
-        db.session.commit()
-        print("Added demo account")
+
+        if not user_exists:
+            user = User(
+                username=current_app.config["DEMO_ACCOUNT_NAME"],
+                email=current_app.config["DEMO_ACCOUNT_EMAIL"],
+                password=current_app.config["DEMO_ACCOUNT_PASSWORD"],
+                email_verified=True,
+                email_verified_on=dt.datetime.now(),
+            )
+            db.session.add(user)
+            db.session.commit()
+            print("Added demo account")
+        else:
+            print("Demo user exists")
     else:
         print("Demo account not enabled")
