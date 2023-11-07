@@ -35,8 +35,10 @@ class DefaultConfig:
     DEMO_ACCOUNT_PASSWORD = None
 
     CELERY = dict(
-        broker_url="redis://localhost:6379",
-        result_backend="redis://localhost:6379",
+        broker_url=getenv("CELERY_BROKER_URL", "redis://localhost:6379"),
+        result_backend=getenv(
+            "CELERY_RESULT_BACKEND", "redis://localhost:6379"
+        ),
     )
 
 
