@@ -8,6 +8,7 @@ Import data from rebrickable
 5. Import elements
 6. Import parts from sets
 """
+
 import gzip
 import os
 import shutil
