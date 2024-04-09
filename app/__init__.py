@@ -1,5 +1,6 @@
 import jinja_partials
 from celery import Celery
+from celery.schedules import crontab
 from flask import Flask
 from flask_injector import FlaskInjector
 
@@ -13,11 +14,19 @@ from app.inject.dao import DAOModule
 from app.inject.database import DBModule
 from app.inject.service import ServiceModule
 from app.settings import get_config
+from app.tasks.rebrickable import import_data
+
+
+def _configure_periodic_tasks(sender: Celery, **kwargs):
+    sender.add_periodic_task(
+        crontab(), import_data.s(), name="import data from rebrickable"
+    )
 
 
 def _init_celery(app: Flask):
     celery_app = Celery(app.name)
     celery_app.config_from_object(app.config["CELERY"])
+    celery_app.on_after_configure.connect(_configure_periodic_tasks)
     celery_app.set_default()
     app.extensions["celery"] = celery_app
     return celery_app

@@ -23,7 +23,7 @@ services:
 
   worker:
     build: .
-    command: celery -A make_celery worker --loglevel INFO
+    command: celery -A make_celery worker --loglevel INFO -B
     env_file: .env
 
   flower:
