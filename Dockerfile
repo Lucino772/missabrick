@@ -1,5 +1,5 @@
 #syntax=docker/dockerfile:1
-FROM python:3.8-slim
+FROM python:3.11-slim
 EXPOSE 8080
 
 # Install nginx
