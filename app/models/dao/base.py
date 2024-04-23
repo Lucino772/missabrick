@@ -10,12 +10,12 @@ ModelKey_T = t.TypeVar("ModelKey_T")
 
 @inject
 class BaseDao(t.Generic[Model_T, ModelKey_T]):
-    model: t.ClassVar[t.Type[Model_T]] = None
+    model: t.ClassVar[type[Model_T]] = None
 
-    def __init__(self, db_session: "scoped_session") -> None:
+    def __init__(self, db_session: scoped_session) -> None:
         self.session = db_session
 
-    def all(self):
+    def all(self):  # noqa A003
         return self.session.execute(sa.select(self.model)).scalars().all()
 
     def get(self, ident: ModelKey_T):

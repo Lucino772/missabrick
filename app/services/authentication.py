@@ -1,22 +1,20 @@
-import typing as t
-
 from flask import session
 from injector import inject
 
-from app.errors import InvalidEmailOrPassword
+from app.errors import InvalidEmailOrPasswordError
 from app.interfaces.daos.user import IUserDao
 from app.models.orm.login import User
 
 
 @inject
 class AuthenticationService:
-    def __init__(self, user_dao: "IUserDao") -> None:
+    def __init__(self, user_dao: IUserDao) -> None:
         self.user_dao = user_dao
 
     def authenticate_with_login(self, email: str, password: str) -> None:
         user = self.user_dao.get_by_email(email)
         if user is None or user.password != password:
-            raise InvalidEmailOrPassword()
+            raise InvalidEmailOrPasswordError
 
         session["user_id"] = user.id
         session["authenticated"] = True

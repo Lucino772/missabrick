@@ -21,6 +21,6 @@ class SigningService:
         serializer = self._get_urlsafe_serializer()
         return serializer.dumps(obj)
 
-    def urlsafe_loads(self, value: str, max_age: int = None) -> t.Any:
+    def urlsafe_loads(self, value: str, max_age: int | None = None) -> t.Any:
         serializer = self._get_urlsafe_serializer()
         return serializer.loads(value, max_age=max_age)

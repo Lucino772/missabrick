@@ -1,5 +1,3 @@
-import typing as t
-
 import sqlalchemy as sa
 from injector import inject
 
@@ -13,9 +11,7 @@ _sentinel = object()
 class UserDao(BaseDao[User, int]):
     model = User
 
-    def exists(
-        self, email: str = _sentinel, username: str = _sentinel
-    ) -> bool:
+    def exists(self, email: str = _sentinel, username: str = _sentinel) -> bool:
         conditions = []
         if email is not _sentinel:
             conditions.append(User.email == email)
@@ -28,7 +24,7 @@ class UserDao(BaseDao[User, int]):
         query = sa.select(User).where(sa.or_(*conditions))
         return self.session.execute(query).scalars().first() is not None
 
-    def get_by_email(self, email: str) -> t.Optional[User]:
+    def get_by_email(self, email: str) -> User | None:
         return self.session.execute(
             sa.select(User).filter(User.email == email)
         ).scalar_one_or_none()

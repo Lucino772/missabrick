@@ -1,5 +1,4 @@
 import re
-import typing as t
 
 import sqlalchemy as sa
 from injector import inject
@@ -27,13 +26,9 @@ class SearchService:
         keyword_regex = r'(\w+):(("(.*?)")|(\w+))'
         groups = re.findall(keyword_regex, query)
         keywords = [(group[0], group[3] or group[4]) for group in groups]
-        return keywords, re.sub(
-            r" +", " ", re.sub(keyword_regex, "", query).strip()
-        )
+        return keywords, re.sub(r" +", " ", re.sub(keyword_regex, "", query).strip())
 
-    def search(
-        self, search: str, keywords: dict, current_page: int, page_size: int
-    ):
+    def search(self, search: str, keywords: dict, current_page: int, page_size: int):
         select = (
             sa.select(GenericSet)
             .filter(GenericSet.is_minifig.is_(False))
@@ -52,9 +47,7 @@ class SearchService:
             if key == "theme":
                 theme_ids = (
                     self.session.execute(
-                        sa.select(Theme.id).filter(
-                            Theme.name.contains(str(value))
-                        )
+                        sa.select(Theme.id).filter(Theme.name.contains(str(value)))
                     )
                     .scalars()
                     .all()

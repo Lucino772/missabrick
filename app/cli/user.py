@@ -26,7 +26,7 @@ def create_demo_user():
             email=current_app.config["DEMO_ACCOUNT_EMAIL"],
             password=current_app.config["DEMO_ACCOUNT_PASSWORD"],
             email_verified=True,
-            email_verified_on=dt.datetime.now(),
+            email_verified_on=dt.datetime.now(tz=dt.UTC),
         )
         db.session.add(user)
         db.session.commit()

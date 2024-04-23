@@ -12,4 +12,5 @@ class IReportService(IService):
         parts: "pd.DataFrame",
         fig_parts: "pd.DataFrame",
         elements: "pd.DataFrame",
-    ) -> t.Dict[str, t.Any]: ...
+    ) -> dict[str, t.Any]:
+        ...

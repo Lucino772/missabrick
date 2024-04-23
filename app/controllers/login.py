@@ -4,9 +4,9 @@ from injector import inject
 
 from app.errors import (
     EmailVerificationError,
-    InvalidEmailOrPassword,
-    PasswordDoesNotMatch,
-    UserAlreadyExists,
+    InvalidEmailOrPasswordError,
+    PasswordDoesNotMatchError,
+    UserAlreadyExistsError,
 )
 from app.forms.login import SignInForm, SignUpForm
 from app.interfaces.services.account import IAccountService
@@ -35,7 +35,7 @@ class SignInView(MethodView):
                     self._form.email.data, self._form.password.data
                 )
                 return redirect(url_for("explore.index"))
-            except InvalidEmailOrPassword:
+            except InvalidEmailOrPasswordError:
                 error = "The email or password is incorrect"
 
         return render_template("signin.html", form=self._form, error=error)
@@ -45,8 +45,8 @@ class SignInView(MethodView):
 class SignUpView(MethodView):
     def __init__(
         self,
-        account_service: "IAccountService",
-        auth_service: "IAuthenticationService",
+        account_service: IAccountService,
+        auth_service: IAuthenticationService,
     ) -> None:
         self._account_service = account_service
         self._auth_service = auth_service
@@ -68,13 +68,11 @@ class SignUpView(MethodView):
                     password=self._form.password.data,
                     confirm=self._form.confirm.data,
                 )
-                self._auth_service.authenticate_with_login(
-                    user.email, user.password
-                )
+                self._auth_service.authenticate_with_login(user.email, user.password)
                 return redirect(url_for("explore.index"))
-            except PasswordDoesNotMatch:
+            except PasswordDoesNotMatchError:
                 error = "The confirm password does not match the password"
-            except UserAlreadyExists:
+            except UserAlreadyExistsError:
                 error = "This email or username is already used"
 
         return render_template("signup.html", form=self._form, error=error)
@@ -82,7 +80,7 @@ class SignUpView(MethodView):
 
 @inject
 class SignOutView(MethodView):
-    def __init__(self, auth_service: "IAuthenticationService") -> None:
+    def __init__(self, auth_service: IAuthenticationService) -> None:
         self._auth_service = auth_service
 
     def get(self):
@@ -92,7 +90,7 @@ class SignOutView(MethodView):
 
 @inject
 class VerifyEmailView(MethodView):
-    def __init__(self, account_service: "IAccountService"):
+    def __init__(self, account_service: IAccountService):
         self._account_service = account_service
 
     def get(self, token: str):
