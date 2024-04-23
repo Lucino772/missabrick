@@ -1,12 +1,13 @@
 import json
-import typing as t
+from collections.abc import Iterable
+from typing import Any
 
 import pandas as pd
 
 
 class ReportService:
     def _find_first_key(
-        self, possible_values: t.Iterable[str], search_list: t.Iterable[str]
+        self, possible_values: Iterable[str], search_list: Iterable[str]
     ):
         for key in possible_values:
             if key in search_list:
@@ -18,7 +19,7 @@ class ReportService:
         parts: pd.DataFrame,
         fig_parts: pd.DataFrame,
         elements: pd.DataFrame,  # noqa: ARG002
-    ):
+    ) -> dict[str, Any]:
         count_keys = ["count", "current"]
         parts_count_key = self._find_first_key(count_keys, parts.columns)
         fig_parts_count_key = self._find_first_key(count_keys, fig_parts.columns)

@@ -1,5 +1,5 @@
 import tempfile
-import typing as t
+from collections.abc import Iterable
 
 import pandas as pd
 from injector import inject
@@ -21,7 +21,7 @@ class ExportService:
     def _format_parts(
         self,
         set_id: str,
-        parts: t.Iterable["GenericSetPart"],
+        parts: Iterable[GenericSetPart],
         quantity: int = 1,
         fig_id: str | None = None,
     ):
@@ -44,7 +44,7 @@ class ExportService:
 
             yield item
 
-    def _format_elements(self, set_id: str, parts: t.Iterable["GenericSetPart"]):
+    def _format_elements(self, set_id: str, parts: Iterable[GenericSetPart]):
         for set_part in parts:
             related_elements = list(set_part.get_related_elements())
             if len(related_elements) > 0:
@@ -63,7 +63,7 @@ class ExportService:
                     "element_id": None,
                 }
 
-    def export_parts(self, set_id: str, quantity: int = 1):
+    def export_parts(self, set_id: str, quantity: int = 1) -> tuple[int, str]:
         parts = []
         fig_parts = []
         elements = []

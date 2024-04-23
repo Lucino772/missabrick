@@ -52,7 +52,7 @@ class GenerateReportView(MethodView):
             ) = self._read_uploaded_set_excel_file(self._form.file.data)
 
             # Missing data
-            if any(v is None for v in [parts_df, minifigs_parts_df, elements_df]):
+            if parts_df is None or minifigs_parts_df is None or elements_df is None:
                 abort(400)
 
             # Generate report

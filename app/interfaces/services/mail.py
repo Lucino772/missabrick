@@ -1,8 +1,8 @@
-import typing as t
+from typing import Any, Protocol
 
 from app.interfaces.services.service import IService
 
 
-class IMailService(IService):
-    def send(self, _from: str, to: str, subject: str, content: str) -> t.Any:
+class IMailService(IService, Protocol):
+    def send(self, _from: str, to: str, subject: str, content: str) -> Any:
         ...

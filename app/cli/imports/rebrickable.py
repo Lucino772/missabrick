@@ -51,7 +51,11 @@ _URLS = {
 def _download_gzip_file(url: str, dest: str):
     response = requests.get(url, stream=True, timeout=10)
     with open(dest, "wb") as dest_fp, gzip.open(response.raw, "rb") as data:
-        dest_fp.write(data.read())
+        buffer = data.read()
+        if isinstance(buffer, str):
+            dest_fp.write(buffer.encode())
+        else:
+            dest_fp.write(buffer)
 
 
 def _get_files_dest(directory: str, url: str):
@@ -70,7 +74,7 @@ def import_colors(directory: str):
     filename = _get_files_dest(directory, _URLS["colors"])
 
     def _build_color(row):
-        curr: Color = db.session.get(Color, int(row.id))
+        curr = db.session.get(Color, int(row.id))
         if curr is None:
             curr = Color(
                 id=int(row.id),
@@ -97,7 +101,7 @@ def import_themes(directory: str):
     filename = _get_files_dest(directory, _URLS["themes"])
 
     def _build_theme(row):
-        curr: Theme = db.session.get(Theme, int(row.id))
+        curr = db.session.get(Theme, int(row.id))
         parent_id = int(row.parent_id) if row.parent_id is not None else None
 
         if curr is None:
@@ -121,13 +125,13 @@ def import_sets(directory: str):
     filename = _get_files_dest(directory, _URLS["sets"])
 
     def _build_year(value):
-        curr: Year = db.session.get(Year, value)
+        curr = db.session.get(Year, value)
         if curr is None:
             curr = Year(id=value, name=str(value))
         return curr
 
     def _build_set(row):
-        curr: GenericSet = db.session.get(GenericSet, str(row.set_num))
+        curr = db.session.get(GenericSet, str(row.set_num))
         if curr is None:
             curr = GenericSet(
                 id=str(row.set_num),
@@ -165,7 +169,7 @@ def import_minifigs(directory: str):
     filename = _get_files_dest(directory, _URLS["minifigs"])
 
     def _build_fig(row):
-        curr: GenericSet = db.session.get(GenericSet, str(row.fig_num))
+        curr = db.session.get(GenericSet, str(row.fig_num))
         if curr is None:
             curr = GenericSet(
                 id=str(row.fig_num),
@@ -199,7 +203,7 @@ def import_parts(directory: str):
     categories_filename = _get_files_dest(directory, _URLS["part_categories"])
 
     def _build_category(row):
-        curr: PartCategory = db.session.get(PartCategory, int(row.id))
+        curr = db.session.get(PartCategory, int(row.id))
         if curr is None:
             curr = PartCategory(id=int(row.id), name=str(row.name))
         else:
@@ -208,7 +212,7 @@ def import_parts(directory: str):
         return curr
 
     def _build_part(row):
-        curr: Part = db.session.get(Part, str(row.part_num))
+        curr = db.session.get(Part, str(row.part_num))
         if curr is None:
             curr = Part(
                 id=str(row.part_num),
@@ -238,7 +242,7 @@ def import_elements(directory: str):
     filename = _get_files_dest(directory, _URLS["elements"])
 
     def _build_element(row):
-        curr: Element = db.session.get(Element, int(row.element_id))
+        curr = db.session.get(Element, int(row.element_id))
         if curr is None:
             curr = Element(
                 id=int(row.element_id),

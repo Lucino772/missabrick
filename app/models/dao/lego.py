@@ -5,22 +5,20 @@ from app.models.orm.lego import GenericSet, Theme, Year
 
 
 @inject
-class ThemeDao(BaseDao[Theme, int]):
-    model = Theme
+class ThemeDao(BaseDao[Theme, int], model=Theme):
+    pass
 
 
 @inject
-class YearDao(BaseDao[Year, int]):
-    model = Year
+class YearDao(BaseDao[Year, int], model=Year):
+    pass
 
 
 @inject
-class GenericSetDao(BaseDao[GenericSet, str]):
-    model = GenericSet
-
+class GenericSetDao(BaseDao[GenericSet, str], model=GenericSet):
     def get_subsets(
-        self, _set: "GenericSet", quantity: int = 1, *, recursive: bool = True
-    ):
+        self, _set: GenericSet, quantity: int = 1, *, recursive: bool = True
+    ) -> list[tuple[GenericSet, int]]:
         _subsets: list[tuple[GenericSet, int]] = [(_set, quantity)]
 
         if recursive:
@@ -36,7 +34,7 @@ class GenericSetDao(BaseDao[GenericSet, str]):
 
     def get_minifigs(
         self, _set: GenericSet, quantity: int = 1, *, recursive: bool = True
-    ):
+    ) -> list[tuple[GenericSet, GenericSet, int]]:
         _minifigs: list[tuple[GenericSet, GenericSet, int]] = [
             (subset, minifig.child, minifig.quantity * _quantity)
             for subset, _quantity in self.get_subsets(

@@ -32,7 +32,8 @@ class SignInView(MethodView):
         if self._form.validate():
             try:
                 self._auth_service.authenticate_with_login(
-                    self._form.email.data, self._form.password.data
+                    self._form.email.data,  # type: ignore
+                    self._form.password.data,  # type: ignore
                 )
                 return redirect(url_for("explore.index"))
             except InvalidEmailOrPasswordError:
@@ -63,10 +64,10 @@ class SignUpView(MethodView):
         if self._form.validate():
             try:
                 user = self._account_service.create_account(
-                    username=self._form.username.data,
-                    email=self._form.email.data,
-                    password=self._form.password.data,
-                    confirm=self._form.confirm.data,
+                    username=self._form.username.data,  # type: ignore
+                    email=self._form.email.data,  # type: ignore
+                    password=self._form.password.data,  # type: ignore
+                    confirm=self._form.confirm.data,  # type: ignore
                 )
                 self._auth_service.authenticate_with_login(user.email, user.password)
                 return redirect(url_for("explore.index"))

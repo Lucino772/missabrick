@@ -16,7 +16,7 @@ def send_file(filename: str, source: str, _type: str, fd: int | None = None):
     nbytes = os.stat(source).st_size
     resp = make_response(_stream_file_and_remove(source, fd))
     resp.headers["Content-Disposition"] = f"inline; filename={filename}"
-    resp.headers["Content-Length"] = nbytes
+    resp.headers["Content-Length"] = str(nbytes)
     resp.headers["Content-Type"] = _type
     resp.headers["filename"] = filename
     return resp

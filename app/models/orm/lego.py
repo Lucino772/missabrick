@@ -1,43 +1,42 @@
-import typing as t
-
-import sqlalchemy as sa
+from sqlalchemy import ForeignKey, String, Text
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
-from app.extensions import db
+from app.models.orm.base import Base
+from app.models.orm.types import intpk, strpk
 
 
 # Theme, Year & Color
-class Theme(db.Model):
+class Theme(Base):
     __tablename__ = "theme"
 
-    id: Mapped[int] = mapped_column(primary_key=True)  # noqa: A003
-    name: Mapped[str] = mapped_column(sa.String(255))
+    id: Mapped[intpk]  # noqa: A003
+    name: Mapped[str]
 
     # Theme
-    parent_id: Mapped[int | None] = mapped_column(sa.ForeignKey("theme.id"))
-    parent: Mapped[t.Optional["Theme"]] = relationship()
+    parent_id: Mapped[int | None] = mapped_column(ForeignKey("theme.id"))
+    parent: Mapped["Theme | None"] = relationship()
 
     # GenericSet
     sets: Mapped[list["GenericSet"]] = relationship(back_populates="theme")
 
 
-class Year(db.Model):
+class Year(Base):
     __tablename__ = "year"
 
     id: Mapped[int] = mapped_column(primary_key=True)  # noqa: A003
-    name: Mapped[int] = mapped_column(sa.Integer())
+    name: Mapped[int]
 
     # GenericSet
     sets: Mapped[list["GenericSet"]] = relationship(back_populates="year")
 
 
-class Color(db.Model):
+class Color(Base):
     __tablename__ = "color"
 
-    id: Mapped[int] = mapped_column(primary_key=True)  # noqa: A003
-    name: Mapped[str] = mapped_column(sa.String(255))
-    rgb: Mapped[str] = mapped_column(sa.String(20))
-    is_trans: Mapped[bool] = mapped_column()
+    id: Mapped[intpk]  # noqa: A003
+    name: Mapped[str]
+    rgb: Mapped[str] = mapped_column(String(20))
+    is_trans: Mapped[bool]
 
     # GenericSetPart
     parts: Mapped[list["GenericSetPart"]] = relationship(back_populates="color")
@@ -47,40 +46,40 @@ class Color(db.Model):
 
 
 # Sets (Set & Minifig)
-class GenericSetRelationship(db.Model):
+class GenericSetRelationship(Base):
     __tablename__ = "generic_set_rel"
 
-    quantity: Mapped[int] = mapped_column()
+    quantity: Mapped[int]
 
     # GenericSet (Parent)
     parent_id: Mapped[str] = mapped_column(
-        sa.String, sa.ForeignKey("generic_set.id"), primary_key=True
+        String, ForeignKey("generic_set.id"), primary_key=True
     )
     parent: Mapped["GenericSet"] = relationship(foreign_keys=[parent_id])
 
     # GenericSet (Child)
     child_id: Mapped[str] = mapped_column(
-        sa.String, sa.ForeignKey("generic_set.id"), primary_key=True
+        String, ForeignKey("generic_set.id"), primary_key=True
     )
     child: Mapped["GenericSet"] = relationship(foreign_keys=[child_id])
 
 
-class GenericSet(db.Model):
+class GenericSet(Base):
     __tablename__ = "generic_set"
 
-    id: Mapped[str] = mapped_column(sa.String(20), primary_key=True)  # noqa: A003
-    name: Mapped[str] = mapped_column(sa.String(255))
-    num_parts: Mapped[int] = mapped_column()
-    img_url: Mapped[str] = mapped_column(sa.Text)
-    is_minifig: Mapped[bool] = mapped_column()
+    id: Mapped[strpk]  # noqa: A003
+    name: Mapped[str]
+    num_parts: Mapped[int]
+    img_url: Mapped[str] = mapped_column(Text)
+    is_minifig: Mapped[bool]
 
     # Theme
-    theme_id: Mapped[int | None] = mapped_column(sa.ForeignKey("theme.id"))
-    theme: Mapped[t.Optional["Theme"]] = relationship(back_populates="sets")
+    theme_id: Mapped[int | None] = mapped_column(ForeignKey("theme.id"))
+    theme: Mapped["Theme | None"] = relationship(back_populates="sets")
 
     # Year
-    year_id: Mapped[int | None] = mapped_column(sa.ForeignKey("year.id"))
-    year: Mapped[t.Optional["Year"]] = relationship(back_populates="sets")
+    year_id: Mapped[int | None] = mapped_column(ForeignKey("year.id"))
+    year: Mapped["Year | None"] = relationship(back_populates="sets")
 
     # GenericSet
     parents: Mapped[list["GenericSet"]] = relationship(
@@ -107,26 +106,26 @@ class GenericSet(db.Model):
 
 
 # Parts
-class PartCategory(db.Model):
+class PartCategory(Base):
     __tablename__ = "part_category"
 
-    id: Mapped[int] = mapped_column(primary_key=True)  # noqa: A003
-    name: Mapped[str] = mapped_column(sa.String(255))
+    id: Mapped[intpk]  # noqa: A003
+    name: Mapped[str]
 
     # Parts
     parts: Mapped[list["Part"]] = relationship(back_populates="category")
 
 
-class Part(db.Model):
+class Part(Base):
     __tablename__ = "part"
 
-    id: Mapped[str] = mapped_column(sa.String(20), primary_key=True)  # noqa: A003
-    name: Mapped[str] = mapped_column(sa.String(255))
-    material: Mapped[str] = mapped_column(sa.String(255))
+    id: Mapped[strpk]  # noqa: A003
+    name: Mapped[str]
+    material: Mapped[str]
 
     # PartCategory
     category_id: Mapped[int] = mapped_column(
-        sa.ForeignKey("part_category.id"), nullable=False
+        ForeignKey("part_category.id"), nullable=False
     )
     category: Mapped["PartCategory"] = relationship(back_populates="parts")
 
@@ -137,28 +136,26 @@ class Part(db.Model):
     elements: Mapped[list["Element"]] = relationship(back_populates="part")
 
 
-class GenericSetPart(db.Model):
+class GenericSetPart(Base):
     __tablename__ = "generic_set_part"
 
-    id: Mapped[int] = mapped_column(primary_key=True)  # noqa: A003
-    quantity: Mapped[int] = mapped_column()
-    is_spare: Mapped[bool] = mapped_column()
-    img_url: Mapped[str] = mapped_column(sa.Text)
+    id: Mapped[intpk]  # noqa: A003
+    quantity: Mapped[int]
+    is_spare: Mapped[bool]
+    img_url: Mapped[str] = mapped_column(Text)
 
     # GenericSet
     set_id: Mapped[str] = mapped_column(
-        sa.String, sa.ForeignKey("generic_set.id"), nullable=False
+        String, ForeignKey("generic_set.id"), nullable=False
     )
     set: Mapped["GenericSet"] = relationship(back_populates="parts")  # noqa A003
 
     # Part
-    part_id: Mapped[str] = mapped_column(
-        sa.String, sa.ForeignKey("part.id"), nullable=False
-    )
+    part_id: Mapped[str] = mapped_column(String, ForeignKey("part.id"), nullable=False)
     part: Mapped["Part"] = relationship(back_populates="inset")
 
     # Color
-    color_id: Mapped[int] = mapped_column(sa.ForeignKey("color.id"), nullable=False)
+    color_id: Mapped[int] = mapped_column(ForeignKey("color.id"), nullable=False)
     color: Mapped["Color"] = relationship(back_populates="parts")
 
     def get_related_elements(self):
@@ -168,21 +165,21 @@ class GenericSetPart(db.Model):
 
 
 # Element
-class Element(db.Model):
+class Element(Base):
     __tablename__ = "element"
 
-    id: Mapped[int] = mapped_column(primary_key=True)  # noqa: A003
+    id: Mapped[intpk]  # noqa: A003
 
     # Part
-    part_id: Mapped[str] = mapped_column(sa.ForeignKey("part.id"), nullable=False)
+    part_id: Mapped[str] = mapped_column(ForeignKey("part.id"), nullable=False)
     part: Mapped[Part] = relationship(back_populates="elements")
 
     # Color
-    color_id: Mapped[int] = mapped_column(sa.ForeignKey("color.id"), nullable=False)
+    color_id: Mapped[int] = mapped_column(ForeignKey("color.id"), nullable=False)
     color: Mapped[Color] = relationship(back_populates="elements")
 
 
-# class PartsRelationship(db.Model):
+# class PartsRelationship(Base):
 #     __tablename__ = "parts_relationship"
 
 #     id: Mapped[int] = mapped_column(primary_key=True)

@@ -19,7 +19,7 @@ class AuthenticationService:
         session["user_id"] = user.id
         session["authenticated"] = True
 
-    def get_current_user(self) -> User:
+    def get_current_user(self) -> User | None:
         user_id = session.get("user_id", None)
         if user_id is None:
             return None

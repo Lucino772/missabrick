@@ -1,22 +1,21 @@
-import datetime as dt
-
-import sqlalchemy as sa
-import sqlalchemy_utils as sa_utils
+from sqlalchemy import String
 from sqlalchemy.orm import Mapped, mapped_column
 
-from app.extensions import db
+from app.models.orm.base import Base
+from app.models.orm.types import (
+    datetime_tz,
+    intpk,
+    pbkdf2_sha512_password,
+    unique_email,
+)
 
 
-class User(db.Model):
+class User(Base):
     __tablename__ = "user"
 
-    id: Mapped[int] = mapped_column(primary_key=True)  # noqa: A003
-    username: Mapped[str] = mapped_column(sa.String(20), unique=True, nullable=False)
-    email: Mapped[str] = mapped_column(
-        sa_utils.EmailType(), unique=True, nullable=False
-    )
-    password: Mapped[str] = mapped_column(
-        sa_utils.PasswordType(schemes=["pbkdf2_sha512"]), nullable=False
-    )
-    email_verified: Mapped[bool] = mapped_column(nullable=False, default=False)
-    email_verified_on: Mapped[dt.datetime] = mapped_column(sa.DateTime(), nullable=True)
+    id: Mapped[intpk]  # noqa: A003
+    username: Mapped[str] = mapped_column(String(20), unique=True)
+    email: Mapped[unique_email]
+    password: Mapped[pbkdf2_sha512_password]
+    email_verified: Mapped[bool] = mapped_column(default=False)
+    email_verified_on: Mapped[datetime_tz | None]

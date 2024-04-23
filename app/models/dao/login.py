@@ -8,10 +8,10 @@ _sentinel = object()
 
 
 @inject
-class UserDao(BaseDao[User, int]):
-    model = User
-
-    def exists(self, email: str = _sentinel, username: str = _sentinel) -> bool:
+class UserDao(BaseDao[User, int], model=User):
+    def exists(
+        self, email: str | object = _sentinel, username: str | object = _sentinel
+    ) -> bool:
         conditions = []
         if email is not _sentinel:
             conditions.append(User.email == email)
