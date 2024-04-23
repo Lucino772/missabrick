@@ -26,7 +26,8 @@ def _configure_periodic_tasks(sender: Celery, **kwargs):
 def _init_celery(app: Flask):
     celery_app = Celery(app.name)
     celery_app.config_from_object(app.config["CELERY"])
-    celery_app.on_after_configure.connect(_configure_periodic_tasks)
+    if celery_app.on_after_configure is not None:
+        celery_app.on_after_configure.connect(_configure_periodic_tasks)
     celery_app.set_default()
     app.extensions["celery"] = celery_app
     return celery_app

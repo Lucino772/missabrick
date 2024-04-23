@@ -49,10 +49,13 @@ _URLS = {
 
 
 def _download_gzip_file(url: str, dest: str):
-    response = requests.get(url, stream=True)
-    with open(dest, "wb") as dest_fp:
-        with gzip.open(response.raw, "rb") as data:
-            dest_fp.write(data.read())
+    response = requests.get(url, stream=True, timeout=10)
+    with open(dest, "wb") as dest_fp, gzip.open(response.raw, "rb") as data:
+        buffer = data.read()
+        if isinstance(buffer, str):
+            dest_fp.write(buffer.encode())
+        else:
+            dest_fp.write(buffer)
 
 
 def _get_files_dest(directory: str, url: str):
@@ -63,7 +66,7 @@ def _download_files(directory: str):
     for url in _URLS.values():
         filename = _get_files_dest(directory, url)
         _download_gzip_file(url, filename)
-        print("Downloaded file {} ({})".format(filename, url))
+        print(f"Downloaded file {filename} ({url})")
 
 
 # Imports Basic Models
@@ -71,7 +74,7 @@ def import_colors(directory: str):
     filename = _get_files_dest(directory, _URLS["colors"])
 
     def _build_color(row):
-        curr: Color = db.session.get(Color, int(row.id))
+        curr = db.session.get(Color, int(row.id))
         if curr is None:
             curr = Color(
                 id=int(row.id),
@@ -98,16 +101,11 @@ def import_themes(directory: str):
     filename = _get_files_dest(directory, _URLS["themes"])
 
     def _build_theme(row):
-        curr: Theme = db.session.get(Theme, int(row.id))
-        if row.parent_id is not None:
-            parent_id = int(row.parent_id)
-        else:
-            parent_id = None
+        curr = db.session.get(Theme, int(row.id))
+        parent_id = int(row.parent_id) if row.parent_id is not None else None
 
         if curr is None:
-            curr = Theme(
-                id=int(row.id), name=str(row.name), parent_id=parent_id
-            )
+            curr = Theme(id=int(row.id), name=str(row.name), parent_id=parent_id)
         else:
             curr.name = str(row.name)
             curr.parent_id = parent_id
@@ -127,13 +125,13 @@ def import_sets(directory: str):
     filename = _get_files_dest(directory, _URLS["sets"])
 
     def _build_year(value):
-        curr: Year = db.session.get(Year, value)
+        curr = db.session.get(Year, value)
         if curr is None:
             curr = Year(id=value, name=str(value))
         return curr
 
     def _build_set(row):
-        curr: GenericSet = db.session.get(GenericSet, str(row.set_num))
+        curr = db.session.get(GenericSet, str(row.set_num))
         if curr is None:
             curr = GenericSet(
                 id=str(row.set_num),
@@ -155,11 +153,11 @@ def import_sets(directory: str):
         return curr
 
     set_df = pd.read_csv(filename)
-    years = map(
-        lambda item: _build_year(item[1]),
-        set_df["year"].astype(np.int64).drop_duplicates().items(),
-    )
-    sets = map(_build_set, set_df.itertuples())
+    years = [
+        _build_year(item[1])
+        for item in set_df["year"].astype(np.int64).drop_duplicates().items()
+    ]
+    sets = [_build_set(item) for item in set_df.itertuples()]
     db.session.add_all(years)
     db.session.add_all(sets)
     db.session.flush()
@@ -171,7 +169,7 @@ def import_minifigs(directory: str):
     filename = _get_files_dest(directory, _URLS["minifigs"])
 
     def _build_fig(row):
-        curr: GenericSet = db.session.get(GenericSet, str(row.fig_num))
+        curr = db.session.get(GenericSet, str(row.fig_num))
         if curr is None:
             curr = GenericSet(
                 id=str(row.fig_num),
@@ -205,7 +203,7 @@ def import_parts(directory: str):
     categories_filename = _get_files_dest(directory, _URLS["part_categories"])
 
     def _build_category(row):
-        curr: PartCategory = db.session.get(PartCategory, int(row.id))
+        curr = db.session.get(PartCategory, int(row.id))
         if curr is None:
             curr = PartCategory(id=int(row.id), name=str(row.name))
         else:
@@ -214,7 +212,7 @@ def import_parts(directory: str):
         return curr
 
     def _build_part(row):
-        curr: Part = db.session.get(Part, str(row.part_num))
+        curr = db.session.get(Part, str(row.part_num))
         if curr is None:
             curr = Part(
                 id=str(row.part_num),
@@ -244,7 +242,7 @@ def import_elements(directory: str):
     filename = _get_files_dest(directory, _URLS["elements"])
 
     def _build_element(row):
-        curr: Element = db.session.get(Element, int(row.element_id))
+        curr = db.session.get(Element, int(row.element_id))
         if curr is None:
             curr = Element(
                 id=int(row.element_id),
@@ -288,16 +286,12 @@ def import_relationships(directory: str):
             img_url=str(row.img_url),
         )
 
-    inventory_df = pd.read_csv(
-        _get_files_dest(directory, _URLS["inventories"])
-    )
+    inventory_df = pd.read_csv(_get_files_dest(directory, _URLS["inventories"]))
     inventory_df.sort_values(["version", "set_num"], inplace=True)
     inventory_df.drop_duplicates(["set_num"], inplace=True, keep="last")
 
     # Import sets relationships
-    inventory_sets_df = pd.read_csv(
-        _get_files_dest(directory, _URLS["inventory_sets"])
-    )
+    inventory_sets_df = pd.read_csv(_get_files_dest(directory, _URLS["inventory_sets"]))
     inventory_sets_rels_df = pd.merge(
         inventory_df,
         inventory_sets_df,
@@ -320,9 +314,7 @@ def import_relationships(directory: str):
         right_on="inventory_id",
         suffixes=("_parent", "_child"),
     )
-    inventory_minifigs = map(
-        _build_set_rel, inventory_minifigs_rels_df.itertuples()
-    )
+    inventory_minifigs = map(_build_set_rel, inventory_minifigs_rels_df.itertuples())
 
     # Import parts relationships
     inventory_parts_df = pd.read_csv(
@@ -336,9 +328,7 @@ def import_relationships(directory: str):
         right_on="inventory_id",
         suffixes=("_parent", "_child"),
     )
-    inventory_parts = map(
-        _build_part_rel, inventory_parts_rels_df.itertuples()
-    )
+    inventory_parts = map(_build_part_rel, inventory_parts_rels_df.itertuples())
 
     db.session.add_all(inventory_sets)
     db.session.add_all(inventory_minifigs)

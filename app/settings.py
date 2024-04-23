@@ -1,5 +1,7 @@
 import os
 import secrets
+from collections.abc import Mapping
+from typing import Any
 
 from dotenv import load_dotenv
 
@@ -33,12 +35,10 @@ class DefaultConfig:
     DEMO_ACCOUNT_EMAIL = None
     DEMO_ACCOUNT_PASSWORD = None
 
-    CELERY = dict(
-        broker_url=getenv("CELERY_BROKER_URL", "redis://localhost:6379"),
-        result_backend=getenv(
-            "CELERY_RESULT_BACKEND", "redis://localhost:6379"
-        ),
-    )
+    CELERY: Mapping[str, Any] = {
+        "broker_url": getenv("CELERY_BROKER_URL", "redis://localhost:6379"),
+        "result_backend": getenv("CELERY_RESULT_BACKEND", "redis://localhost:6379"),
+    }
 
 
 class DemoConfig(DefaultConfig):
