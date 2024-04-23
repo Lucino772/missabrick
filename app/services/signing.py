@@ -1,4 +1,4 @@
-import typing as t
+from typing import Any
 
 import itsdangerous
 from flask import Config
@@ -17,10 +17,10 @@ class SigningService:
             salt=self._salt,
         )
 
-    def urlsafe_dumps(self, obj: t.Any) -> str:
+    def urlsafe_dumps(self, obj: Any) -> str | bytes:
         serializer = self._get_urlsafe_serializer()
         return serializer.dumps(obj)
 
-    def urlsafe_loads(self, value: str, max_age: int = None) -> t.Any:
+    def urlsafe_loads(self, value: str, max_age: int | None = None) -> Any:
         serializer = self._get_urlsafe_serializer()
         return serializer.loads(value, max_age=max_age)

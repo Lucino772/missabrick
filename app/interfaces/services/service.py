@@ -1,4 +1,5 @@
-import typing as t
+from typing import Protocol
 
 
-class IService(t.Protocol): ...
+class IService(Protocol):
+    ...

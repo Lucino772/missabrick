@@ -1,8 +1,8 @@
-class UserAlreadyExists(Exception):
+class UserAlreadyExistsError(Exception):
     pass
 
 
-class InvalidEmailOrPassword(Exception):
+class InvalidEmailOrPasswordError(Exception):
     pass
 
 
@@ -15,9 +15,9 @@ class EmailVerificationError(Exception):
         self.invalid_email = invalid_email
 
 
-class PasswordDoesNotMatch(Exception):
+class PasswordDoesNotMatchError(Exception):
     pass
 
 
-class SetDoesNotExists(Exception):
+class SetDoesNotExistsError(Exception):
     pass

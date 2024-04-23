@@ -1,7 +1,8 @@
 import re
-import typing as t
+from typing import Any
 
 import sqlalchemy as sa
+from flask_sqlalchemy.pagination import Pagination
 from injector import inject
 from sqlalchemy.orm import scoped_session
 
@@ -23,17 +24,17 @@ class SearchService:
         self.theme_dao = theme_dao
         self.year_dao = year_dao
 
-    def parse_query(self, query: str):
+    def parse_query(self, query: str) -> tuple[dict[Any, Any], str]:
         keyword_regex = r'(\w+):(("(.*?)")|(\w+))'
         groups = re.findall(keyword_regex, query)
         keywords = [(group[0], group[3] or group[4]) for group in groups]
-        return keywords, re.sub(
+        return dict(keywords), re.sub(
             r" +", " ", re.sub(keyword_regex, "", query).strip()
         )
 
     def search(
         self, search: str, keywords: dict, current_page: int, page_size: int
-    ):
+    ) -> Pagination:
         select = (
             sa.select(GenericSet)
             .filter(GenericSet.is_minifig.is_(False))
@@ -48,13 +49,11 @@ class SearchService:
                 )
             )
 
-        for key, value in keywords:
+        for key, value in keywords.items():
             if key == "theme":
                 theme_ids = (
                     self.session.execute(
-                        sa.select(Theme.id).filter(
-                            Theme.name.contains(str(value))
-                        )
+                        sa.select(Theme.id).filter(Theme.name.contains(str(value)))
                     )
                     .scalars()
                     .all()
@@ -78,8 +77,8 @@ class SearchService:
 
         return db.paginate(select, page=current_page, per_page=page_size)
 
-    def get_years(self):
+    def get_years(self) -> list[int]:
         return [year.name for year in self.year_dao.all()]
 
-    def get_themes(self):
+    def get_themes(self) -> list[str]:
         return [theme.name for theme in self.theme_dao.all()]

@@ -12,7 +12,7 @@ blueprint = Blueprint("explore", __name__, url_prefix="/explore")
 
 @inject
 class IndexView(MethodView):
-    def __init__(self, request: "Request", search_service: "ISearchService"):
+    def __init__(self, request: Request, search_service: ISearchService):
         self._search_service = search_service
         self._request = request
 
@@ -25,9 +25,7 @@ class IndexView(MethodView):
     def get(self):
         page, query, page_size = self._parse_request()
         keywords, search = self._search_service.parse_query(query)
-        results = self._search_service.search(
-            search, keywords, page, page_size
-        )
+        results = self._search_service.search(search, keywords, page, page_size)
         themes = self._search_service.get_themes()
         years = self._search_service.get_years()
 
@@ -38,7 +36,7 @@ class IndexView(MethodView):
                     search=query,
                     pagination=results,
                 )
-            elif htmx.target == "content":
+            if htmx.target == "content":
                 return render_template(
                     "partials/explore/index.html",
                     search=query,
@@ -58,7 +56,7 @@ class IndexView(MethodView):
 
 @inject
 class DownloadView(MethodView):
-    def __init__(self, export_service: "IExportService") -> None:
+    def __init__(self, export_service: IExportService) -> None:
         self._export_service = export_service
 
     def get(self, set_id: str):

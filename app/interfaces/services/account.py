@@ -1,12 +1,14 @@
-import typing as t
+from typing import Protocol
 
 from app.interfaces.services.service import IService
 from app.models.orm.login import User
 
 
-class IAccountService(IService):
+class IAccountService(IService, Protocol):
     def create_account(
         self, username: str, email: str, password: str, confirm: str
-    ) -> "User": ...
+    ) -> User:
+        ...
 
-    def verify_account(self, token: str, expiration: int = ...) -> None: ...
+    def verify_account(self, token: str, expiration: int = ...) -> None:
+        ...

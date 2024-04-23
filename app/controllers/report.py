@@ -15,7 +15,7 @@ blueprint = Blueprint("report", __name__, url_prefix="/report")
 
 @inject
 class GenerateReportView(MethodView):
-    def __init__(self, report_service: "IReportService"):
+    def __init__(self, report_service: IReportService):
         self._report_service = report_service
         self._form = UploadForm()
 
@@ -24,9 +24,7 @@ class GenerateReportView(MethodView):
         with NamedTemporaryFile() as fp:
             file.save(fp)
 
-            dataframes = pd.read_excel(
-                fp, sheet_name=["parts", "minifigs", "elements"]
-            )
+            dataframes = pd.read_excel(fp, sheet_name=["parts", "minifigs", "elements"])
 
         parts_df = dataframes.get("parts", None)
         minifigs_parts_df = dataframes.get("minifigs", None)
@@ -43,9 +41,7 @@ class GenerateReportView(MethodView):
                 form=self._form,
             )
 
-        return render_template(
-            "report.html", parts=[], fig_parts=[], form=self._form
-        )
+        return render_template("report.html", parts=[], fig_parts=[], form=self._form)
 
     def post(self):
         if self._form.validate_on_submit():
@@ -56,12 +52,7 @@ class GenerateReportView(MethodView):
             ) = self._read_uploaded_set_excel_file(self._form.file.data)
 
             # Missing data
-            if any(
-                map(
-                    lambda v: v is None,
-                    [parts_df, minifigs_parts_df, elements_df],
-                )
-            ):
+            if parts_df is None or minifigs_parts_df is None or elements_df is None:
                 abort(400)
 
             # Generate report
@@ -83,6 +74,7 @@ class GenerateReportView(MethodView):
                 fig_parts=set_report["fig_parts"],
                 form=self._form,
             )
+        return render_template("report.html", parts=[], fig_parts=[], form=self._form)
 
 
 blueprint.add_url_rule("/", view_func=GenerateReportView.as_view("geenrate"))

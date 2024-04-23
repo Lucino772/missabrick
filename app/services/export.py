@@ -1,11 +1,11 @@
 import tempfile
-import typing as t
+from collections.abc import Iterable
 
 import pandas as pd
 from injector import inject
 from sqlalchemy.orm import scoped_session
 
-from app.errors import SetDoesNotExists
+from app.errors import SetDoesNotExistsError
 from app.interfaces.daos.generic_set import IGenericSetDao
 from app.models.orm.lego import GenericSet, GenericSetPart
 
@@ -13,7 +13,7 @@ from app.models.orm.lego import GenericSet, GenericSetPart
 @inject
 class ExportService:
     def __init__(
-        self, db_session: "scoped_session", generic_set_dao: "IGenericSetDao"
+        self, db_session: scoped_session, generic_set_dao: IGenericSetDao
     ) -> None:
         self.session = db_session
         self.generic_set_dao = generic_set_dao
@@ -21,9 +21,9 @@ class ExportService:
     def _format_parts(
         self,
         set_id: str,
-        parts: t.Iterable["GenericSetPart"],
+        parts: Iterable[GenericSetPart],
         quantity: int = 1,
-        fig_id: str = None,
+        fig_id: str | None = None,
     ):
         for set_part in parts:
             item = {
@@ -44,9 +44,7 @@ class ExportService:
 
             yield item
 
-    def _format_elements(
-        self, set_id: str, parts: t.Iterable["GenericSetPart"]
-    ):
+    def _format_elements(self, set_id: str, parts: Iterable[GenericSetPart]):
         for set_part in parts:
             related_elements = list(set_part.get_related_elements())
             if len(related_elements) > 0:
@@ -65,21 +63,19 @@ class ExportService:
                     "element_id": None,
                 }
 
-    def export_parts(self, set_id: str, quantity: int = 1):
+    def export_parts(self, set_id: str, quantity: int = 1) -> tuple[int, str]:
         parts = []
         fig_parts = []
         elements = []
 
         _set = self.session.get(GenericSet, set_id)
         if _set is None:
-            raise SetDoesNotExists()
+            raise SetDoesNotExistsError
 
         for _subset, _quantity in self.generic_set_dao.get_subsets(
             _set, quantity=quantity, recursive=True
         ):
-            parts.extend(
-                self._format_parts(_subset.id, _subset.parts, _quantity)
-            )
+            parts.extend(self._format_parts(_subset.id, _subset.parts, _quantity))
             elements.extend(self._format_elements(_subset.id, _subset.parts))
 
             for _, minifig, fig_quantity in self.generic_set_dao.get_minifigs(
@@ -90,9 +86,7 @@ class ExportService:
                         _subset.id, minifig.parts, fig_quantity, minifig.id
                     )
                 )
-                elements.extend(
-                    self._format_elements(_subset.id, minifig.parts)
-                )
+                elements.extend(self._format_elements(_subset.id, minifig.parts))
 
         _parts = pd.DataFrame(
             parts,
