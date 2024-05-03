@@ -11,7 +11,7 @@
 # - sqlalchemy-utils==0.41.2
 # - passlib==1.7.4
 # - flask-migrate==4.0.7
-# - flask-session==0.8.0
+# - flask-session[cachelib]==0.8.0
 # - itsdangerous==2.2.0
 # - sendgrid==6.11.0
 # - flask-htmx==0.3.2
@@ -20,12 +20,16 @@
 # - flask-injector==0.15.0
 # - celery[redis]==5.4.0
 # - flower==2.0.1
+# - pydantic==2.7.0
+# - pydantic_settings==2.2.1
 #
 
 alembic==1.13.1
     # via flask-migrate
 amqp==5.2.0
     # via kombu
+annotated-types==0.6.0
+    # via pydantic
 billiard==4.2.0
     # via celery
 blinker==1.7.0
@@ -109,11 +113,17 @@ prometheus-client==0.20.0
     # via flower
 prompt-toolkit==3.0.43
     # via click-repl
+pydantic==2.7.0
+    # via pydantic-settings
+pydantic-core==2.18.1
+    # via pydantic
+pydantic-settings==2.2.1
 python-dateutil==2.9.0.post0
     # via
     #   celery
     #   pandas
 python-dotenv==1.0.1
+    # via pydantic-settings
 python-http-client==3.3.7
     # via sendgrid
 pytz==2024.1
@@ -139,6 +149,8 @@ tornado==6.4
 typing-extensions==4.11.0
     # via
     #   alembic
+    #   pydantic
+    #   pydantic-core
     #   sqlalchemy
 tzdata==2024.1
     # via

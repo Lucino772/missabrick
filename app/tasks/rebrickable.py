@@ -132,6 +132,11 @@ def import_sets(directory: str):
 
     def _build_set(row):
         curr = db.session.get(GenericSet, str(row.set_num))
+        theme = db.session.get(Theme, int(row.theme_id))
+        year = db.session.get(Year, int(row.year))
+        if year is None or theme is None:
+            return None
+
         if curr is None:
             curr = GenericSet(
                 id=str(row.set_num),
@@ -139,26 +144,33 @@ def import_sets(directory: str):
                 num_parts=int(row.num_parts),
                 img_url=str(row.img_url),
                 is_minifig=False,
-                theme_id=int(row.theme_id),
-                year_id=int(row.year),
+                theme=theme,
+                year=year,
             )
         else:
             curr.name = str(row.name)
             curr.num_parts = int(row.num_parts)
             curr.img_url = str(row.img_url)
             curr.is_minifig = False
-            curr.theme_id = int(row.theme_id)
-            curr.year_id = int(row.year)
+            curr.theme = theme
+            curr.year = year
 
         return curr
 
     set_df = pd.read_csv(filename)
+
     years = [
         _build_year(item[1])
         for item in set_df["year"].astype(np.int64).drop_duplicates().items()
     ]
-    sets = [_build_set(item) for item in set_df.itertuples()]
     db.session.add_all(years)
+    db.session.flush()
+
+    sets = [
+        item
+        for item in [_build_set(item) for item in set_df.itertuples()]
+        if item is not None
+    ]
     db.session.add_all(sets)
     db.session.flush()
 
@@ -213,25 +225,33 @@ def import_parts(directory: str):
 
     def _build_part(row):
         curr = db.session.get(Part, str(row.part_num))
+        category = db.session.get(PartCategory, int(row.part_cat_id))
+        if category is None:
+            return None
+
         if curr is None:
             curr = Part(
                 id=str(row.part_num),
                 name=str(row.name),
                 material=str(row.part_material),
-                category_id=int(row.part_cat_id),
+                category=category,
             )
         else:
             curr.name = str(row.name)
             curr.material = str(row.part_material)
-            curr.category_id = int(row.part_cat_id)
+            curr.category = category
 
         return curr
 
     categories_df = pd.read_csv(categories_filename)
     categories = map(_build_category, categories_df.itertuples())
-    parts_df = pd.read_csv(parts_filename)
-    parts = map(_build_part, parts_df.itertuples())
     db.session.add_all(categories)
+    db.session.flush()
+
+    parts_df = pd.read_csv(parts_filename)
+    parts = [
+        item for item in map(_build_part, parts_df.itertuples()) if item is not None
+    ]
     db.session.add_all(parts)
     db.session.flush()
 
@@ -243,21 +263,30 @@ def import_elements(directory: str):
 
     def _build_element(row):
         curr = db.session.get(Element, int(row.element_id))
+        part = db.session.get(Part, str(row.part_num))
+        color = db.session.get(Color, int(row.color_id))
+        if part is None or color is None:
+            return None
+
         if curr is None:
             curr = Element(
                 id=int(row.element_id),
-                part_id=str(row.part_num),
-                color_id=int(row.color_id),
+                part=part,
+                color=color,
                 # design_id=str(row.design_id) # TODO: Add column in model
             )
         else:
-            curr.part_id = str(row.part_num)
-            curr.color_id = int(row.color_id)
+            curr.part = part
+            curr.color = color
 
         return curr
 
     elements_df = pd.read_csv(filename)
-    elements = map(_build_element, elements_df.itertuples())
+    elements = [
+        item
+        for item in map(_build_element, elements_df.itertuples())
+        if item is not None
+    ]
     db.session.add_all(elements)
     db.session.flush()
 
@@ -270,17 +299,26 @@ def import_relationships(directory: str):
     db.session.execute(sa.delete(GenericSetPart))
 
     def _build_set_rel(row):
+        parent = db.session.get(GenericSet, str(row.set_num_parent))
+        child = db.session.get(GenericSet, str(row.set_num_child))
+        if parent is None or child is None:
+            return None
+
         return GenericSetRelationship(
-            parent_id=str(row.set_num_parent),
-            child_id=str(row.set_num_child),
+            parent=parent,
+            child=child,
             quantity=int(row.quantity),
         )
 
     def _build_part_rel(row):
+        _set = db.session.get(GenericSet, str(row.set_num))
+        part = db.session.get(Part, str(row.part_num))
+        color = db.session.get(Color, int(row.color_id))
+
         return GenericSetPart(
-            set_id=str(row.set_num),
-            part_id=str(row.part_num),
-            color_id=int(row.color_id),
+            set=_set,
+            part=part,
+            color=color,
             quantity=int(row.quantity),
             is_spare=row.is_spare == "t",
             img_url=str(row.img_url),
@@ -300,7 +338,13 @@ def import_relationships(directory: str):
         right_on="inventory_id",
         suffixes=("_parent", "_child"),
     )
-    inventory_sets = map(_build_set_rel, inventory_sets_rels_df.itertuples())
+    inventory_sets = [
+        item
+        for item in map(_build_set_rel, inventory_sets_rels_df.itertuples())
+        if item is not None
+    ]
+    db.session.add_all(inventory_sets)
+    db.session.flush()
 
     # Import minifigs relationships
     inventory_minifigs_df = pd.read_csv(
@@ -314,7 +358,13 @@ def import_relationships(directory: str):
         right_on="inventory_id",
         suffixes=("_parent", "_child"),
     )
-    inventory_minifigs = map(_build_set_rel, inventory_minifigs_rels_df.itertuples())
+    inventory_minifigs = [
+        item
+        for item in map(_build_set_rel, inventory_minifigs_rels_df.itertuples())
+        if item is not None
+    ]
+    db.session.add_all(inventory_minifigs)
+    db.session.flush()
 
     # Import parts relationships
     inventory_parts_df = pd.read_csv(
@@ -328,10 +378,11 @@ def import_relationships(directory: str):
         right_on="inventory_id",
         suffixes=("_parent", "_child"),
     )
-    inventory_parts = map(_build_part_rel, inventory_parts_rels_df.itertuples())
-
-    db.session.add_all(inventory_sets)
-    db.session.add_all(inventory_minifigs)
+    inventory_parts = [
+        item
+        for item in map(_build_part_rel, inventory_parts_rels_df.itertuples())
+        if item is not None
+    ]
     db.session.add_all(inventory_parts)
     db.session.flush()
 
@@ -345,15 +396,15 @@ def import_data():
         directory = tempfile.mkdtemp()
         _download_files(directory)
 
-        import_colors(directory)
-        import_themes(directory)
-        import_sets(directory)
-        import_minifigs(directory)
-        import_parts(directory)
-        import_elements(directory)
-        import_relationships(directory)
-
-        db.session.commit()
+        with db.session.no_autoflush:
+            import_colors(directory)
+            import_themes(directory)
+            import_sets(directory)
+            import_minifigs(directory)
+            import_parts(directory)
+            import_elements(directory)
+            import_relationships(directory)
+            db.session.commit()
     finally:
         if os.path.exists(directory):
             shutil.rmtree(directory)

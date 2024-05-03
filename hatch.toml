@@ -18,7 +18,7 @@ dependencies = [
   "sqlalchemy-utils==0.41.2",
   "passlib==1.7.4",
   "flask-migrate==4.0.7",
-  "flask-session==0.8.0",
+  "flask-session[cachelib]==0.8.0",
   "itsdangerous==2.2.0",
   "sendgrid==6.11.0",
   "flask-htmx==0.3.2",
@@ -27,6 +27,8 @@ dependencies = [
   "flask-injector==0.15.0",
   "celery[redis]==5.4.0",
   "flower==2.0.1",
+  "pydantic==2.7.0",
+  "pydantic_settings==2.2.1"
 ]
 
 [envs.hatch-static-analysis]
