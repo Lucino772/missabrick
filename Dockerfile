@@ -1,35 +1,40 @@
-#syntax=docker/dockerfile:1
-FROM python:3.11-slim
-EXPOSE 8080
+# syntax=docker/dockerfile:1
+ARG PYTHON_VERSION=3.11
 
-# Install nginx
-RUN apt-get update && apt-get install nginx -y --no-install-recommends
-COPY nginx.default /etc/nginx/sites-available/default
-RUN ln -sf /dev/stdout /var/log/nginx/access.log \
-    && ln -sf /dev/stderr /var/log/nginx/error.log
+FROM python:${PYTHON_VERSION}-slim-bullseye as backend
+ENV PYTHONDONTWRITEBYTECODE=1
+ENV PYTHONUNBUFFERED=1
 
-WORKDIR /opt/app
+# Update & Upgrade
+RUN apt update && apt upgrade -y && apt clean -y
 
-# Install gunicorn
-RUN pip3 install gunicorn
+# Install Nginx
+RUN --mount=type=bind,source=docker/scripts/install-nginx.sh,target=install-nginx.sh \
+    bash ./install-nginx.sh
 
-# Install requirements
-COPY requirements.txt /opt/app/
-RUN pip3 install -r requirements.txt --no-cache-dir
-# Copy Flask application
-COPY . /opt/app/
+# Install python dependencies
+RUN --mount=type=cache,target=/root/.cache/pip \
+    --mount=type=bind,source=requirements.txt,target=requirements.txt \
+    python -m pip install --upgrade pip \
+    && python -m pip install gunicorn psycopg2-binary \
+    && python -m pip install -r requirements.txt \
+    && python -m pip install supervisor
 
-# Load data
-RUN flask db upgrade
-RUN flask data load
-RUN flask user demo
+# Create working directory
+WORKDIR /usr/src/app
 
-# Install Dependencies
-RUN cat <<EOT | tr -d '\r' | /bin/bash
-pip3 install --upgrade pip
-pip3 install --no-cache-dir gunicorn
-pip3 install --no-cache-dir psycopg2-binary
-pip3 install --no-cache-dir -r requirements.txt
-EOT
+# Copy
+COPY ./docker/rootfs /
+COPY . .
 
-CMD [ "/opt/app/start.sh" ]
+# Expose the port that the application listens on.
+EXPOSE 80
+
+# Environment Variables for backend
+ENV MISSABRICK_PROXY__X_FOR=1
+ENV MISSABRICK_PROXY__X_PROTO=1
+ENV MISSABRICK_PROXY__X_HOST=1
+
+# Set ENTRYPOINT and CMD
+ENTRYPOINT ["/docker-entrypoint.sh"]
+CMD [ "/usr/local/bin/supervisord" ]
