@@ -1,12 +1,9 @@
-[env]
-requires = ["hatch-pip-compile"]
-
-[envs.default]
-type = "pip-compile"
-pip-compile-resolver = "uv"
-pip-compile-installer = "uv"
-python = "3.11"
-skip-install = true
+[project]
+name = "missabrick"
+version = "0.1.0"
+description = "Add your description here"
+readme = "README.md"
+requires-python = ">=3.11"
 dependencies = [
   "pandas==2.2.2",
   "openpyxl==3.1.2",
@@ -31,6 +28,16 @@ dependencies = [
   "pydantic_settings==2.2.1"
 ]
 
-[envs.hatch-static-analysis]
-python = "3.11"
-config-path = "ruff_defaults.toml"
+[tool.ruff]
+line-length = 88
+indent-width = 4
+target-version = "py311"
+extend-exclude = [ "migrations/**.py" ]
+
+[tool.ruff.lint.isort]
+known-first-party = ["app"]
+
+[dependency-groups]
+dev = [
+  "ruff>=0.8.6",
+]
