@@ -10,7 +10,7 @@ RUN apt update && apt upgrade -y && apt clean -y
 
 # Install Nginx
 RUN --mount=type=bind,source=docker/scripts/install-nginx.sh,target=install-nginx.sh \
-    bash ./install-nginx.sh
+    cat ./install-nginx.sh | tr -d '\r' | /bin/bash
 
 # Install python dependencies
 RUN --mount=type=cache,target=/root/.cache/pip \
@@ -36,5 +36,9 @@ ENV MISSABRICK_PROXY__X_PROTO=1
 ENV MISSABRICK_PROXY__X_HOST=1
 
 # Set ENTRYPOINT and CMD
+RUN sed -i 's/\r$//g' /docker-entrypoint.sh
+RUN sed -i 's/\r$//g' /docker-entrypoint.d/50-prepare-app.sh
+RUN chmod +x /docker-entrypoint.sh
+RUN chmod +x /docker-entrypoint.d/50-prepare-app.sh
 ENTRYPOINT ["/docker-entrypoint.sh"]
 CMD [ "/usr/local/bin/supervisord" ]

@@ -7,12 +7,6 @@ services:
     volumes:
       - cache:/data
 
-  webapp:
-    build: .
-    env_file: .env
-    ports:
-      - "8080:80"
-
   postgres:
     image: postgres
     restart: always
@@ -22,6 +16,14 @@ services:
       POSTGRES_PASSWORD: missabrick
     volumes:
       - postgres-data:/var/lib/postgresql/data
+
+  webapp:
+    build: .
+    env_file: .env
+    depends_on:
+      - postgres
+    ports:
+      - "8080:80"
 
   adminer:
     image: adminer
