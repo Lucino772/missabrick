@@ -11,5 +11,4 @@ class IReportService(IService, Protocol):
         parts: pd.DataFrame,
         fig_parts: pd.DataFrame,
         elements: pd.DataFrame,
-    ) -> dict[str, Any]:
-        ...
+    ) -> dict[str, Any]: ...
